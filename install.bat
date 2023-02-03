@@ -4,7 +4,7 @@
 :: Put WAU Arguments here ::
 ::::::::::::::::::::::::::::
 
-SET arguments=-UpdatesAtLogon -UpdatesInterval Weekly -InstallUserContext -StartMenuShortcut -DesktopShortcut
+SET arguments=-UpdatesAtLogon -UpdatesInterval Weekly -InstallUserContext -StartMenuShortcut -DesktopShortcut -RunOnMetered -NotificationLevel SuccessOnly -UseWhiteList -ListPath https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/included_apps.txt -DoNotUpdate -Silent
 
 
 ::::::::::::::::::::::::::::

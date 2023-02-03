@@ -8,11 +8,11 @@ function Test-Network {
     # Workaround for ARM64 (Access Denied / Win32 internal Server error)
     $ProgressPreference = 'SilentlyContinue'
 
-    #Test connectivity during 30 min then timeout
+    #Test connectivity during 5 min then timeout
     Write-Log "Checking internet connection..." "Yellow"
-    While ($timeout -lt 1800) {
+    While ($timeout -lt 300) {
 
-        $URLtoTest = "https://raw.githubusercontent.com/Romanitho/Winget-AutoUpdate/main/LICENSE"
+        $URLtoTest = "https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/LICENSE"
         $URLcontent = ((Invoke-WebRequest -URI $URLtoTest -UseBasicParsing).content)
 
         if ($URLcontent -like "*MIT License*") {
