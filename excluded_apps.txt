@@ -3,3 +3,4 @@ Microsoft.EdgeWebView2Runtime
 Microsoft.Office
 Microsoft.OneDrive
 Citrix.Workspace
+Microsoft.Teams
