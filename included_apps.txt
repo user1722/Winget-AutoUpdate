@@ -39,3 +39,4 @@ Oracle.JDK.18
 Oracle.JDK.17
 Microsoft.WindowsADK
 Microsoft.ADKPEAddon
+ownCloud.ownCloudDesktop
