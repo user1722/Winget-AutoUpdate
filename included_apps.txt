@@ -53,4 +53,3 @@ Nvidia.PhysX
 Microsoft.VisualStudioCode
 Microsoft.WindowsTerminal
 Microsoft.AzureStorageExplorer
-.
