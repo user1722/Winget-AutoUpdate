@@ -113,7 +113,7 @@ param(
 
 <# APP INFO #>
 
-$WAUVersion = "1.16.1"
+$WAUVersion = "1.16.2"
 
 <# FUNCTIONS #>
 
@@ -379,7 +379,21 @@ function Install-WingetAutoUpdate {
             $NewAcl.SetAccessRule($fileSystemAccessRule)
             Set-Acl -Path $LogFile -AclObject $NewAcl
         }
-
+        
+        #Security check
+        Write-host "`nChecking Mods Directory:" -ForegroundColor Yellow
+        . "$WingetUpdatePath\functions\Invoke-ModsProtect.ps1"
+        $Protected = Invoke-ModsProtect "$WingetUpdatePath\mods"
+        if ($Protected -eq $True) {
+            Write-Host "The mods directory is now secured!`n" -ForegroundColor Green
+        }
+        elseif ($Protected -eq $False) {
+            Write-Host "The mods directory was already secured!`n" -ForegroundColor Green
+        }
+        else {
+            Write-Host "Error: The mods directory couldn't be verified as secured!`n" -ForegroundColor Red
+        }
+        
         #Create Shortcuts
         if ($StartMenuShortcut) {
             if (!(Test-Path "${env:ProgramData}\Microsoft\Windows\Start Menu\Programs\Winget-AutoUpdate (WAU)")) {
