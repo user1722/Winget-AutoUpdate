@@ -267,7 +267,7 @@ if (Test-Network) {
         if ($InstallOK -gt 0) {
             Write-Log "$InstallOK apps updated ! No more update." "Green"
         }
-        if ($InstallOK -eq 0) {
+        if ($InstallOK -eq 0 -or !$InstallOK) {
             Write-Log "No new update." "Green"
         }
 
