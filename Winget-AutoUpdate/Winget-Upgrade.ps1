@@ -112,8 +112,23 @@ if (Test-Network) {
             #Get External ListPath if run as System
             if ($WAUConfig.WAU_ListPath) {
                 Write-Log "WAU uses External Lists from: $($WAUConfig.WAU_ListPath.TrimEnd(" ", "\", "/"))"
+				
                 if ($($WAUConfig.WAU_ListPath) -ne "GPO") {
+					
                     $NewList = Test-ListPath $WAUConfig.WAU_ListPath.TrimEnd(" ", "\", "/") $WAUConfig.WAU_UseWhiteList $WAUConfig.InstallLocation.TrimEnd(" ", "\")
+					#Get External ListPath from Github
+					$URLtoTestMS = $WAUConfig.WAU_ListPath.TrimEnd(" ", "\", "/")
+					$URLcontentIncludedMS = ((Invoke-WebRequest -URI $URLtoTestMS -UseBasicParsing).content)
+					if ($WAUConfig.WAU_UseWhiteList){
+						$URLcontentIncludedMS | out-file -filepath $WorkingDir\included_apps.txt -Force
+						(gc $WorkingDir\included_apps.txt) | ? {$_.trim() -ne "" } | set-content $WorkingDir\included_apps.txt
+					}
+					if (!$WAUConfig.WAU_UseWhiteList) {
+                        $URLcontentIncludedMS | out-file -filepath $WorkingDir\excluded_apps.txt -Force
+						(gc $WorkingDir\excluded_apps.txt) | ? {$_.trim() -ne "" } | set-content $WorkingDir\excluded_apps.txt
+                        }					
+					#
+					
                     if ($ReachNoPath) {
                         Write-Log "Couldn't reach/find/compare/copy from $($WAUConfig.WAU_ListPath.TrimEnd(" ", "\", "/"))..." "Red"
                         $Script:ReachNoPath = $False
@@ -121,6 +136,9 @@ if (Test-Network) {
                     if ($NewList) {
                         Write-Log "Newer List downloaded/copied to local path: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))" "Yellow"
                     }
+					if ($URLcontentIncludedMS) {
+                        Write-Log "Newer List downloaded/copied to local path from Github: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))" "Yellow"
+					}	
                     else {
                         if ($WAUConfig.WAU_UseWhiteList -and (Test-Path "$WorkingDir\included_apps.txt")) {
                             Write-Log "List (white) is up to date." "Green"
