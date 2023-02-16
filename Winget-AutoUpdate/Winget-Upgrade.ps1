@@ -159,7 +159,31 @@ if (Test-Network) {
             if ($WAUConfig.WAU_ModsPath) {
                 Write-Log "WAU uses External Mods from: $($WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/"))"
                 $NewMods, $DeletedMods = Test-ModsPath $WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/") $WAUConfig.InstallLocation.TrimEnd(" ", "\")
-                if ($ReachNoPath) {
+               
+	       #Get External ModPath from Github
+		$URLtoTestModMS =  $WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/")
+		$URLcontentIncludedModMS = ((Invoke-WebRequest -URI $URLtoTestModMS -UseBasicParsing).content)
+
+		$file_data = (($URLcontentIncludedModMS).split('"')).Trim()
+		$file_data = $file_data | Where-Object {($_ -like ‘*install.ps1*’) -or ($_ -like ‘*override.txt*’) -or ($_ -like ‘*installed.ps1*’) -or ($_ -like ‘*upgrade.ps1*’) }  
+		$file_data = $file_data | Where-Object {$_ -notmatch '/' }  
+
+		ForEach ($line in $file_data )
+		{
+			$Linedata = $line
+			$URLtoTestMod = "https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/Winget-AutoUpdate/mods/$Linedata"
+			$URLcontentIncludedMod = ((Invoke-WebRequest -URI $URLtoTestMod -UseBasicParsing).content)
+			$URLcontentIncludedMod | out-file -filepath "$($WAUConfig.InstallLocation.TrimEnd(" ", "\"))\mods\$Linedata" -Force
+
+		}
+
+				
+		if ($URLcontentIncludedMod) {
+                     Write-Log "Newer Mod downloaded/copied to local path from Github: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))/mods" "Yellow"
+		}
+				
+		
+		if ($ReachNoPath) {
                     Write-Log "Couldn't reach/find/compare/copy from $($WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/"))..." "Red"
                     $Script:ReachNoPath = $False
                 }
