@@ -161,11 +161,12 @@ if (Test-Network) {
                 $NewMods, $DeletedMods = Test-ModsPath $WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/") $WAUConfig.InstallLocation.TrimEnd(" ", "\")
                
 	       #Get External ModPath from Github
+	       if ($WAUConfig.WAU_ModsPath -like ("*git*")) {
 		$URLtoTestModMS =  $WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/")
 		$URLcontentIncludedModMS = ((Invoke-WebRequest -URI $URLtoTestModMS -UseBasicParsing).content)
 
 		$file_data = (($URLcontentIncludedModMS).split('"')).Trim()
-		$file_data = $file_data | Where-Object {($_ -like ‘*install.ps1*’) -or ($_ -like ‘*override.txt*’) -or ($_ -like ‘*installed.ps1*’) -or ($_ -like ‘*upgrade.ps1*’) }  
+		$file_data = $file_data | Where-Object {($_ -like "*install.ps1*") -or ($_ -like "*override.txt*") -or ($_ -like "*installed.ps1*") -or ($_ -like "*upgrade.ps1*") }  
 		$file_data = $file_data | Where-Object {$_ -notmatch '/' }  
 
 		ForEach ($line in $file_data )
@@ -176,7 +177,7 @@ if (Test-Network) {
 			$URLcontentIncludedMod | out-file -filepath "$($WAUConfig.InstallLocation.TrimEnd(" ", "\"))\mods\$Linedata" -Force
 
 		}
-
+		}
 				
 		if ($URLcontentIncludedMod) {
                      Write-Log "Newer Mod downloaded/copied to local path from Github: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))/mods" "Yellow"
