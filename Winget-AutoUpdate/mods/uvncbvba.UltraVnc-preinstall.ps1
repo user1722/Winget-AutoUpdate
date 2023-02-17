@@ -1,6 +1,6 @@
 ﻿#Beginning of App Name string to Silently Uninstall (MSI/NSIS/INNO/EXE with defined silent uninstall in registry)
 #Multiple: "app1*","app2*", required wildcard (*) after; search is done with "-like"!
-$App = @("UltraVn*")
+$App = @("uvncbvba.UltraVnc")
 
 
 $Proc = @("VNC*","ultra*","uvn*","msiexec*")
