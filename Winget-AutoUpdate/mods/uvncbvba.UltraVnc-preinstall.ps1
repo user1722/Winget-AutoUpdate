@@ -217,36 +217,33 @@ if (Test-Path -Path $APP32location)
 {
     $APPuninstall32 = "True"
     Uninstall-ModsApp $App
-	if ($Wait) {
-    Wait-ModsProc $Wait
-}
+
+
 }
 
 if (Test-Path -Path $APP64location)
 {
     $APPuninstall64 = "True"
-    Uninstall-ModsApp $App
-	if ($Wait) {
+    
+}
+if ($Wait) {
     Wait-ModsProc $Wait
 }
-}
-
 if($Appuninstall32 -eq "True")
 {
 	Install-ModsApp $AppID
-	
+		
+}
 
-	if ($Wait) {
-    Wait-ModsProc $Wait
-}
-}
+
 if($Appuninstall64 -eq "True")
 {
 	Install-ModsApp $AppID
 	
+
+}
 	if ($Wait) {
     Wait-ModsProc $Wait
-}
 }
 else
 { 
