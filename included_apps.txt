@@ -56,3 +56,4 @@ Microsoft.AzureStorageExplorer
 GitHub.GitHubDesktop
 Win32diskimager.win32diskimager
 geeksoftwareGmbH.PDF24Creator
+BlueJeans.BlueJeans
