@@ -34,7 +34,7 @@ function Uninstall-ModsApp ($App) {
                     $ProductCode = Select-String "{.*}" -inputobject $UninstallString
                     $ProductCode = $ProductCode.matches.groups[0].value
                     #MSI x64 Installer
-                    $Exec = Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList "/uninstall /x$ProductCode REBOOT=R /qn /quiet /norestart" -PassThru -Wait
+                    $Exec = Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList "/x$ProductCode REBOOT=R /qn" -PassThru -Wait
                     #Stop Hard Reboot (if bad MSI!)
                     if ($Exec.ExitCode -eq 1641) {
                         Start-Process "C:\Windows\System32\shutdown.exe" -ArgumentList "/a"
@@ -63,7 +63,7 @@ function Uninstall-ModsApp ($App) {
                             }
                             if ($Inno) {
                                 #Inno x64 Installer
-                                Start-Process $UninstallString -ArgumentList " /uninstall /qn /quiet /norestart /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
+                                Start-Process $UninstallString -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
                             }
                             else {
                                 Write-Host "x64 Uninstaller unknown, trying the UninstallString from registry..."
@@ -90,7 +90,7 @@ function Uninstall-ModsApp ($App) {
                         $ProductCode = Select-String "{.*}" -inputobject $UninstallString
                         $ProductCode = $ProductCode.matches.groups[0].value
                         #MSI x86 Installer
-                        $Exec = Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList "/x$ProductCode /uninstall REBOOT=R /qn /quiet" -PassThru -Wait
+                        $Exec = Start-Process "C:\Windows\System32\msiexec.exe" -ArgumentList "/x$ProductCode REBOOT=R /qn" -PassThru -Wait
                         #Stop Hard Reboot (if bad MSI!)
                         if ($Exec.ExitCode -eq 1641) {
                             Start-Process "C:\Windows\System32\shutdown.exe" -ArgumentList "/a"
@@ -119,7 +119,7 @@ function Uninstall-ModsApp ($App) {
                                 }
                                 if ($Inno) {
                                     #Inno x86 Installer
-                                    Start-Process $UninstallString -ArgumentList "/uninstall /qn /quiet /norestart /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
+                                    Start-Process $UninstallString -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
                                 }
                                 else {
                                     Write-Host "x86 Uninstaller unknown, trying the UninstallString from registry..."
