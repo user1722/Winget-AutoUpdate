@@ -49,6 +49,7 @@ Microsoft.WindowsADK
 Microsoft.ADKPEAddon
 ownCloud.ownCloudDesktop
 LogMeIn.GoToMeeting
+Cisco.CiscoWebexMeetings
 Nvidia.PhysX
 Microsoft.VisualStudioCode
 Microsoft.WindowsTerminal
