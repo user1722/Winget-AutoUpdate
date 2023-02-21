@@ -3,14 +3,14 @@
 $App = @("Teamviewe*")
 
 
-$Proc = @("Teamviewe*","msiexec*")
+$Proc = @("Teamviewe*")
 
 #Install App from Winget Repo, multiple: "appID1","appID2". Example:
 #$AppID = @("Microsoft.PowerToys")
 $AppID = @("Teamviewer.Teamviewer")
 
 #Beginning of Process Name to Wait for to End - optional wildcard (*) after, without .exe, multiple: "proc1","proc2"
-$Wait = @("Teamviewe*","msiexec*")
+$Wait = @("Teamviewe*")
 
 function Wait-ModsProc ($Wait) {
     foreach ($process in $Wait)
@@ -177,8 +177,8 @@ if ($Proc) {
     }
 $APPuninstall = "false"	
 $APP32location = Join-Path -Path ${env:ProgramFiles(x86)} -ChildPath TeamViewer\uninstall.exe
-
-if (Test-Path -Path $APP32location)
+$APP32location2 = Join-Path -Path ${env:ProgramFiles(x86)} -ChildPath TeamViewer\TeamViewer.exe
+if ((Test-Path -Path $APP32location) -or (Test-Path -Path $APP32location2))
 {
     $Appuninstall = "True"
     Uninstall-ModsApp $App
@@ -186,6 +186,7 @@ if (Test-Path -Path $APP32location)
     Wait-ModsProc $Wait
 }
 }
+
 
 if($Appuninstall -eq "True")
 {
