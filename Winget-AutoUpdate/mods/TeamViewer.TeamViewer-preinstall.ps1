@@ -3,14 +3,14 @@
 $App = @("Teamviewe*")
 
 
-$Proc = @("Teamviewe*")
+$Proc = @("Teamviewe*","msiexec*")
 
 #Install App from Winget Repo, multiple: "appID1","appID2". Example:
 #$AppID = @("Microsoft.PowerToys")
 $AppID = @("Teamviewer.Teamviewer")
 
 #Beginning of Process Name to Wait for to End - optional wildcard (*) after, without .exe, multiple: "proc1","proc2"
-$Wait = @("Teamviewe*")
+$Wait = @("Teamviewe*","msiexec*")
 
 function Wait-ModsProc ($Wait) {
     foreach ($process in $Wait)
