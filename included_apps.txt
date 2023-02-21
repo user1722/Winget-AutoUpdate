@@ -28,7 +28,6 @@ Git.Git
 7zip.7zip
 Zoom.Zoom
 TigerVNCproject.TigerVNC
-uvncbvba.UltraVnc
 TigerVNCproject.TigerVNC.Nightly
 WinSCP.WinSCP
 WiresharkFoundation.Wireshark
@@ -59,3 +58,4 @@ Win32diskimager.win32diskimager
 geeksoftwareGmbH.PDF24Creator
 BlueJeans.BlueJeans
 Meld.Meld
+BlenderFoundation.Blender
