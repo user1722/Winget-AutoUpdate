@@ -59,3 +59,5 @@ geeksoftwareGmbH.PDF24Creator
 BlueJeans.BlueJeans
 Meld.Meld
 BlenderFoundation.Blender
+JAMSoftware.TreeSize.Free
+JAMSoftware.TreeSize
