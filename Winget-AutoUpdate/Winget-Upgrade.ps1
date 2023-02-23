@@ -344,6 +344,16 @@ if (Test-Network) {
         }
     }
     else {
+   	Install-Prerequisites
+	Install-WinGet
+	$TestWinget = Get-WingetCmd
+	if ($TestWinget) {
+		
+	Write-Log "Critical: Winget wurde Nachinstalliert und ist beim naechsten mal einsetzbar" "red"
+	}
+	
+	else {
+	
         Write-Log "Critical: Winget not installed or detected, exiting..." "red"
         New-Item "$WorkingDir\logs\error.txt" -Value "Winget not installed or detected" -Force
         Write-Log "End of process!" "Cyan"
