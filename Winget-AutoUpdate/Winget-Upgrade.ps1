@@ -354,8 +354,8 @@ if (Test-Network) {
 	
 	else {
 	
-        Write-Log "Critical: Winget not installed or detected, exiting..." "red"
-        New-Item "$WorkingDir\logs\error.txt" -Value "Winget not installed or detected" -Force
+        Write-Log "Critical: Winget not installed or detected and couldnt be installed, exiting..." "red"
+        New-Item "$WorkingDir\logs\error.txt" -Value "Winget not installed or detected and couldnt be installed" -Force
         Write-Log "End of process!" "Cyan"
         Exit 1
     }
