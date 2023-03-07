@@ -345,7 +345,7 @@ if (Test-Network) {
         }
     }
     else {
-	Write-Log "Critical Winget Componenten Fehlen"
+	Write-Log "Critical: Winget Komponenten Fehlen" "red"
    	Install-Prerequisites
 	Install-WinGet
 	$TestWinget = Get-WingetCmd
