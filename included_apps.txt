@@ -62,3 +62,4 @@ Meld.Meld
 BlenderFoundation.Blender
 JAMSoftware.TreeSize.Free
 JAMSoftware.TreeSize
+Jabra.Direct
