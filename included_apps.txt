@@ -63,3 +63,4 @@ BlenderFoundation.Blender
 JAMSoftware.TreeSize.Free
 JAMSoftware.TreeSize
 Jabra.Direct
+Microsoft.Teams
