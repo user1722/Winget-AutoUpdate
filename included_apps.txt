@@ -64,3 +64,4 @@ JAMSoftware.TreeSize.Free
 JAMSoftware.TreeSize
 Jabra.Direct
 Microsoft.Teams
+Logitech.GHUB
