@@ -4,7 +4,7 @@ Configure Winget to daily update installed apps.
 
 .DESCRIPTION
 Install powershell scripts and scheduled task to daily run Winget upgrade and notify connected users.
-Possible to exclude apps from auto-update
+Posibility to exclude apps from auto-update
 https://github.com/user1722/Winget-AutoUpdate
 
 .PARAMETER Silent
@@ -29,10 +29,13 @@ Disable Winget-AutoUpdate update checking. By default, WAU auto update if new ve
 Use White List instead of Black List. This setting will not create the "exclude_apps.txt" but "include_apps.txt"
 
 .PARAMETER ListPath
-Get Black/White List from Path (URL/UNC/Local)
+Get Black/White List from Path (URL/UNC/GPO/Local)
 
 .PARAMETER ModsPath
-Get mods from Path (URL/UNC/Local)
+Get mods from Path (URL/UNC/Local/AzureBlob)
+
+.PARAMETER AzureBlobURL
+Set the Azure Storage Blob URL including the SAS token. The token requires at a minimum 'Read' and 'List' permissions. It is recommended to set this at the container level
 
 .PARAMETER Uninstall
 Remove scheduled tasks and scripts.
@@ -65,7 +68,7 @@ Run WAU on metered connection. Default No.
 Install WAU with system and user context executions
 
 .PARAMETER BypassListForUsers
-Configure WAU to bypass the Black/White list when run in user context
+Configure WAU to bypass the Black/White list when run in user context. Applications installed in system context will be ignored under user context.
 
 .EXAMPLE
 .\Winget-AutoUpdate-Install.ps1 -Silent -DoNotUpdate -MaxLogFiles 4 -MaxLogSize 2097152
@@ -93,6 +96,7 @@ param(
     [Parameter(Mandatory = $False)] [Alias('Path')] [String] $WingetUpdatePath = "$env:ProgramData\Winget-AutoUpdate",
     [Parameter(Mandatory = $False)] [Alias('List')] [String] $ListPath,
     [Parameter(Mandatory = $False)] [Alias('Mods')] [String] $ModsPath,
+    [Parameter(Mandatory = $False)] [Alias('AzureBlobURL')] [String] $AzureBlobSASURL,
     [Parameter(Mandatory = $False)] [Switch] $DoNotUpdate = $false,
     [Parameter(Mandatory = $False)] [Switch] $DisableWAUAutoUpdate = $false,
     [Parameter(Mandatory = $False)] [Switch] $RunOnMetered = $false,
@@ -111,9 +115,6 @@ param(
     [Parameter(Mandatory = $False)] [int64] $MaxLogSize = 1048576 # in bytes, default is 1048576 = 1 MB
 )
 
-<# APP INFO #>
-
-$WAUVersion = "1.16.2"
 
 <# FUNCTIONS #>
 
@@ -158,7 +159,7 @@ function Install-Prerequisites {
                 $SourceURL = "https://aka.ms/vs/17/release/VC_redist.$OSArch.exe"
                 $Installer = $WingetUpdatePath + "\VC_redist.$OSArch.exe"
                 $ProgressPreference = 'SilentlyContinue'
-                Invoke-WebRequest $SourceURL -OutFile (New-Item -Path $Installer -Force)
+                Invoke-WebRequest $SourceURL -UseBasicParsing -OutFile (New-Item -Path $Installer -Force)
                 Write-host "-> Installing VC_redist.$OSArch.exe..."
                 Start-Process -FilePath $Installer -Args "/quiet /norestart" -Wait
                 Remove-Item $Installer -ErrorAction Ignore
