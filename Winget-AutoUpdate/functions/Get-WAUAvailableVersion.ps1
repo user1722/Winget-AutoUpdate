@@ -1,4 +1,4 @@
-#Function to get latest WAU available version on Github
+#Function to get the latest WAU available version on Github
 
 function Get-WAUAvailableVersion {
 
@@ -6,19 +6,20 @@ function Get-WAUAvailableVersion {
     if ($WAUConfig.WAU_UpdatePrerelease -eq 1) {
 
         #Log
-        Write-log "WAU AutoUpdate Pre-release versions is Enabled" "Cyan"
+        Write-ToLog "WAU AutoUpdate Pre-release versions is Enabled" "Cyan"
 
         #Get latest pre-release info
-        $WAUurl = 'https://api.github.com/repos/user1722/Winget-AutoUpdate/releases'
+        $WAUurl = 'https://api.github.com/repos/Romanitho/Winget-AutoUpdate/releases'
 
     }
     else {
 
         #Get latest stable info
-        $WAUurl = 'https://api.github.com/repos/user1722/Winget-AutoUpdate/releases/latest'
+        $WAUurl = 'https://api.github.com/repos/Romanitho/Winget-AutoUpdate/releases/latest'
 
     }
 
+    #Return version
     return ((Invoke-WebRequest $WAUurl -UseBasicParsing | ConvertFrom-Json)[0].tag_name).Replace("v", "")
 
 }
