@@ -356,10 +356,22 @@ if (Test-Network) {
         }
     }
     else {
-        Write-ToLog "Critical: Winget not installed or detected, exiting..." "red"
-        New-Item "$WorkingDir\logs\error.txt" -Value "Winget not installed or detected" -Force
-        Write-ToLog "End of process!" "Cyan"
+	Write-Log "Critical: Winget Komponenten Fehlen" "red"
+   	Install-Prerequisites
+	Install-WinGet
+	$TestWinget = Get-WingetCmd
+	if ($TestWinget) {
+
+	Write-Log "Critical: Winget wurde Nachinstalliert und ist beim naechsten mal einsetzbar" "red"
+	}
+
+	else {
+
+        Write-Log "Critical: Winget not installed or detected and couldnt be installed, exiting..." "red"
+        New-Item "$WorkingDir\logs\error.txt" -Value "Winget not installed or detected and couldnt be installed" -Force
+        Write-Log "End of process!" "Cyan"
         Exit 1
+    	}
     }
 }
 
