@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Handle user interaction from shortcuts and show a Toast
+Handle user interaction from shortcuts and show a Toast notification
 
 .DESCRIPTION
 Act on shortcut run (DEFAULT: Check for updated Apps)
@@ -10,7 +10,7 @@ Open the Log file from Winget-AutoUpdate installation location
 
 .PARAMETER Help
 Open the Web Help page
-https://github.com/user1722/Winget-AutoUpdate
+https://github.com/Romanitho/Winget-AutoUpdate
 
 .EXAMPLE
 .\user-run.ps1 -Logs
@@ -44,9 +44,6 @@ Get-NotifLocale
 #Set common variables
 $OnClickAction = "$WorkingDir\logs\updates.log"
 $Button1Text = $NotifLocale.local.outputs.output[11].message
-$Title = "Winget-AutoUpdate (WAU)"
-$Balise = "Winget-AutoUpdate (WAU)"
-$UserRun = $True
 
 if ($Logs) {
 	if (Test-Path "$WorkingDir\logs\updates.log") {
@@ -56,11 +53,11 @@ if ($Logs) {
 		#Not available yet
 		$Message = $NotifLocale.local.outputs.output[5].message
 		$MessageType = "warning"
-		Start-NotifTask -Message $Message -MessageType $MessageType
+		Start-NotifTask -Message $Message -MessageType $MessageType -UserRun
 	}
 }
 elseif ($Help) {
-	Start-Process "https://github.com/user1722/Winget-AutoUpdate"
+	Start-Process "https://github.com/Romanitho/Winget-AutoUpdate"
 }
 else {
 	try {
@@ -68,7 +65,7 @@ else {
 		if (Test-WAUisRunning) {
 			$Message = $NotifLocale.local.outputs.output[8].message
 			$MessageType = "warning"
-			Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss
+			Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss -UserRun
 			break
 		}
 		#Run scheduled task
@@ -76,7 +73,7 @@ else {
 		#Starting check - Send notification
 		$Message = $NotifLocale.local.outputs.output[6].message
 		$MessageType = "info"
-		Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss
+		Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss -UserRun
 		#Sleep until the task is done
 		While (Test-WAUisRunning) {
 			Start-Sleep 3
@@ -94,12 +91,12 @@ else {
 			$MessageType = "success"
 			$Message = $NotifLocale.local.outputs.output[9].message
 		}
-		Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss
+		Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss -UserRun
 	}
 	catch {
 		#Check failed - Just send notification
 		$Message = $NotifLocale.local.outputs.output[7].message
 		$MessageType = "error"
-		Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss
+		Start-NotifTask -Message $Message -MessageType $MessageType -Button1Text $Button1Text -Button1Action $OnClickAction -ButtonDismiss -UserRun
 	}
 }
