@@ -122,10 +122,12 @@ if (Test-Network) {
 					if ($WAUConfig.WAU_UseWhiteList){
 						$URLcontentIncludedMS | out-file -filepath $WorkingDir\included_apps.txt -Force
 						(gc $WorkingDir\included_apps.txt) | ? {$_.trim() -ne "" } | set-content $WorkingDir\included_apps.txt
+      						$Script:ReachNoPath = $False
 					}
 					if (!$WAUConfig.WAU_UseWhiteList) {
-                        $URLcontentIncludedMS | out-file -filepath $WorkingDir\excluded_apps.txt -Force
+                      				$URLcontentIncludedMS | out-file -filepath $WorkingDir\excluded_apps.txt -Force
 						(gc $WorkingDir\excluded_apps.txt) | ? {$_.trim() -ne "" } | set-content $WorkingDir\excluded_apps.txt
+      						$Script:ReachNoPath = $False
                         }					
 					#
 
@@ -192,8 +194,9 @@ if (Test-Network) {
 		        }
 		        }
 				
-		        if ($URLcontentIncludedMod) {
+		 if ($URLcontentIncludedMod) {
                      Write-Log "Newer Mod downloaded/copied to local path from Github: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))/mods" "Yellow"
+		     $Script:ReachNoPath = $False
 		        }
                 #
                 if ($ReachNoPath) {
