@@ -29,6 +29,7 @@ $AddType = ""
 $DelKey = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{E078C644-A120-4668-AD62-02E9FD530190}"
 $DelKey2 = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{4EEF2644-700F-46F8-9655-915145248986}"
 $DelValue = ""
+$DelValue2 = ""
 
 #Remove file/directory, multiple: "file1","file2"
 $DelFile = @("")
@@ -57,7 +58,8 @@ if ($AddKey -and $AddValue -and $AddTypeData -and $AddType) {
     
 }
 if ($DelKey) {
-    Remove-ModsReg $DelKey $DelValue $DelKey2
+    Remove-ModsReg $DelKey $DelValue
+    Remove-ModsReg $DelKey2 $DelValue2
 }
 if ($DelFile) {
     
