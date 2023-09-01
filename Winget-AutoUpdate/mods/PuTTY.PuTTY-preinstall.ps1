@@ -1,3 +1,17 @@
+function Remove-ModsReg ($DelKey, $DelValue) {
+    if ($DelKey -like "HKEY_LOCAL_MACHINE*") {
+        $DelKey = $DelKey.replace("HKEY_LOCAL_MACHINE", "HKLM:")
+    }
+    if (Test-Path "$DelKey") {
+        if (!$DelValue) {
+            Remove-Item $DelKey -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
+        }
+        else {
+            Remove-ItemProperty $DelKey -Name $DelValue -Force -ErrorAction SilentlyContinue | Out-Null
+        }
+    }
+    Return
+}
 <# ARRAYS/VARIABLES #>
 #Beginning of Process Name to Stop - optional wildcard (*) after, without .exe, multiple: "proc1","proc2"
 $Proc = @("")
@@ -39,7 +53,7 @@ $CopyFile = ""
 $CopyTo = ""
 
 <# FUNCTIONS #>
-. $PSScriptRoot\_Mods-Functions.ps1
+#$PSScriptRoot\_Mods-Functions.ps1
 
 <# MAIN #>
 if ($Proc) {
