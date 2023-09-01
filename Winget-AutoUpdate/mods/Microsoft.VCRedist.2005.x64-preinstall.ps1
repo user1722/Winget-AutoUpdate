@@ -7,7 +7,7 @@ $Proc = @("")
 
 #Install App from Winget Repo, multiple: "appID1","appID2". Example:
 #$AppID = @("Microsoft.PowerToys")
-$AppID = @("Microsoft.VCRedist.2005.x64")
+$AppID = @("Microsoft.VCRedist.2005.x64", "Microsoft.VCRedist.2005.x86")
 
 #Beginning of Process Name to Wait for to End - optional wildcard (*) after, without .exe, multiple: "proc1","proc2"
 $Wait = @("")
