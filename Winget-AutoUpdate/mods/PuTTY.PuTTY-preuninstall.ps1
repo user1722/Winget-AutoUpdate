@@ -1,3 +1,12 @@
+function Remove-ModsFile ($DelFile) {
+    foreach ($file in $DelFile) {
+        if (Test-Path "$file") {
+            Remove-Item -Path $file -Force -Recurse -ErrorAction SilentlyContinue | Out-Null
+        }
+    }
+    Return
+}
+
 <# ARRAYS/VARIABLES #>
 #Beginning of Process Name to Stop - optional wildcard (*) after, without .exe, multiple: "proc1","proc2"
 $Proc = @("")
@@ -37,7 +46,7 @@ $CopyFile = ""
 $CopyTo = ""
 
 <# FUNCTIONS #>
-. $PSScriptRoot\_Mods-Functions.ps1
+#$PSScriptRoot\_Mods-Functions.ps1
 
 <# MAIN #>
 if ($Proc) {
