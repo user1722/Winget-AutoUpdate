@@ -27,6 +27,7 @@ $AddType = ""
 #$DelKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Winget-AutoUpdate"
 #$DelValue = "WAU_BypassListForUsers"
 $DelKey = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{E078C644-A120-4668-AD62-02E9FD530190}"
+$DelKey2 = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{4EEF2644-700F-46F8-9655-915145248986}"
 $DelValue = ""
 
 #Remove file/directory, multiple: "file1","file2"
@@ -56,7 +57,7 @@ if ($AddKey -and $AddValue -and $AddTypeData -and $AddType) {
     
 }
 if ($DelKey) {
-    Remove-ModsReg $DelKey $DelValue
+    Remove-ModsReg $DelKey $DelValue $DelKey2
 }
 if ($DelFile) {
     
@@ -66,3 +67,4 @@ if ($CopyFile -and $CopyTo) {
 }
 
 <# EXTRAS #>
+
