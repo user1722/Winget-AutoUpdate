@@ -195,7 +195,7 @@ if (Test-Network) {
 		        }
 				
 		 if ($URLcontentIncludedMod) {
-                     Write-Log "Newer Mod downloaded/copied to local path from Github: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))/mods" "Yellow"
+                     Write-ToLog "Newer Mod downloaded/copied to local path from Github: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))/mods" "Yellow"
 		     $Script:ReachNoPath = $False
 		        }
                 #
@@ -359,20 +359,20 @@ if (Test-Network) {
         }
     }
     else {
-	Write-Log "Critical: Winget Komponenten Fehlen" "red"
+	Write-ToLog "Critical: Winget Komponenten Fehlen" "red"
    	Install-Prerequisites
 	Install-WinGet
 	$TestWinget = Get-WingetCmd
 	if ($TestWinget) {
 
-	Write-Log "Critical: Winget wurde Nachinstalliert und ist beim naechsten mal einsetzbar" "red"
+	Write-ToLog "Critical: Winget wurde Nachinstalliert und ist beim naechsten mal einsetzbar" "red"
 	}
 
 	else {
 
-        Write-Log "Critical: Winget not installed or detected and couldnt be installed, exiting..." "red"
+        Write-ToLog "Critical: Winget not installed or detected and couldnt be installed, exiting..." "red"
         New-Item "$WorkingDir\logs\error.txt" -Value "Winget not installed or detected and couldnt be installed" -Force
-        Write-Log "End of process!" "Cyan"
+        Write-ToLog "End of process!" "Cyan"
         Exit 1
     	}
     }
