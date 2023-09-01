@@ -1,3 +1,10 @@
+function Copy-ModsFile ($CopyFile, $CopyTo) {
+    if (Test-Path "$CopyFile") {
+        Copy-Item -Path $CopyFile -Destination $CopyTo -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
+    }
+    Return
+}
+
 <# ARRAYS/VARIABLES #>
 #Beginning of Process Name to Stop - optional wildcard (*) after, without .exe, multiple: "proc1","proc2"
 $Proc = @("")
@@ -41,7 +48,7 @@ $CopyFile = "C:\Windows\System32\config\systemprofile\AppData\Roaming\Microsoft\
 $CopyTo = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
 
 <# FUNCTIONS #>
-. $PSScriptRoot\_Mods-Functions.ps1
+#$PSScriptRoot\_Mods-Functions.ps1
 
 <# MAIN #>
 if ($Proc) {
