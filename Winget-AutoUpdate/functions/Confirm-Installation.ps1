@@ -1,5 +1,15 @@
 Function Confirm-Installation ($AppName, $AppVer){
 
+	$ConfigDir = Join-Path -Path $WorkingDir -ChildPath "Config"
+	# Überprüfe, ob das Verzeichnis existiert
+	if (-not (Test-Path -Path $ConfigDir -PathType Container)) {
+    # Das Verzeichnis existiert nicht, also legen wir es an
+    New-Item -Path $ConfigDir -ItemType Directory
+    Write-Host "Das Verzeichnis $ConfigDir wurde erfolgreich erstellt."
+	}
+	else {
+    Write-Host "Das Verzeichnis $ConfigDir existiert bereits."
+	}
     #Set json export file
     $JsonFile = "$WorkingDir\Config\InstalledApps.json"
 
