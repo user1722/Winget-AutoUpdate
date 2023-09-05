@@ -20,12 +20,11 @@ function Wait-ModsProc ($Wait) {
     Return
 }
 
-
-
 function Uninstall-ModsApp ($App) {
     foreach ($app in $App)
     {
         $InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+   
         foreach ($obj in $InstalledSoftware){
             if ($obj.GetValue('DisplayName') -like $App) {
                 $UninstallString = $obj.GetValue('UninstallString')
@@ -76,11 +75,10 @@ function Uninstall-ModsApp ($App) {
                         }
                     }
                 }
-                $x64 = $true
-                break
+                
             }
         }
-        if (!$x64) {
+        
             $InstalledSoftware = Get-ChildItem "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
             foreach ($obj in $InstalledSoftware){
                 if ($obj.GetValue('DisplayName') -like $App) {
@@ -132,10 +130,10 @@ function Uninstall-ModsApp ($App) {
                             }
                         }
                     }
-                    break
+                    
                 }
-            }
-        }
+            
+        }break
     }
     Return
 }
@@ -166,14 +164,6 @@ function Stop-ModsProc ($Proc) {
     Return
 	}
 
-
-function Stop-ModsProc ($Proc) {
-    foreach ($process in $Proc)
-    {
-        Stop-Process -Name $process -Force -ErrorAction SilentlyContinue | Out-Null
-    }
-    Return
-	}
 
 
 
