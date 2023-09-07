@@ -1,6 +1,6 @@
 ﻿#Beginning of App Name string to Silently Uninstall (MSI/NSIS/INNO/EXE with defined silent uninstall in registry)
 #Multiple: "app1*","app2*", required wildcard (*) after; search is done with "-like"!
-$App = @("Microsoft Visual C++ 2012 Redistributabl*")
+$App = @("Microsoft Visual C++ 2012 Redistributabl*","Microsoft Visual C++ 2012 Redistributabl*","Microsoft Visual C++ 2012 Redistributabl*")
 
 $Proc = @("")
 
