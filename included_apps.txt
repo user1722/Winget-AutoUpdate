@@ -68,3 +68,4 @@ Jabra.Direct
 Microsoft.Teams
 Logitech.GHUB
 Dell.DisplayManager
+VMware.WorkstationPlayer
