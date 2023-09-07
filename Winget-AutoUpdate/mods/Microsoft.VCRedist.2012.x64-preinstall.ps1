@@ -2,7 +2,6 @@
 #Multiple: "app1*","app2*", required wildcard (*) after; search is done with "-like"!
 $App = @("Microsoft Visual C++ 2012 Redistributabl*")
 
-
 $Proc = @("")
 
 #Install App from Winget Repo, multiple: "appID1","appID2". Example:
