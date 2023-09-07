@@ -9,7 +9,7 @@ function Update-WAU {
     $Title = $NotifLocale.local.outputs.output[2].title -f "Winget-AutoUpdate"
     $Message = $NotifLocale.local.outputs.output[2].message -f $WAUCurrentVersion, $WAUAvailableVersion
     $MessageType = "info"
-    Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Button1Action $OnClickAction -Button1Text $Button1Text
+    Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType
 
     #Run WAU update
     try {
@@ -53,7 +53,7 @@ function Update-WAU {
         $Title = $NotifLocale.local.outputs.output[3].title -f "Winget-AutoUpdate"
         $Message = $NotifLocale.local.outputs.output[3].message -f $WAUAvailableVersion
         $MessageType = "success"
-        Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Button1Action $OnClickAction -Button1Text $Button1Text
+        Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType
 
         #Rerun with newer version
         Write-ToLog "Re-run WAU"
@@ -69,7 +69,7 @@ function Update-WAU {
         $Title = $NotifLocale.local.outputs.output[4].title -f "Winget-AutoUpdate"
         $Message = $NotifLocale.local.outputs.output[4].message
         $MessageType = "error"
-        Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Button1Action $OnClickAction -Button1Text $Button1Text
+        Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType
         Write-ToLog "WAU Update failed" "Red"
 
     }
