@@ -346,7 +346,7 @@ function Install-WingetAutoUpdate {
         New-ItemProperty $regPath -Name QuietUninstallString -Value "powershell.exe -noprofile -executionpolicy bypass -file `"$WingetUpdatePath\WAU-Uninstall.ps1`"" -Force | Out-Null
         New-ItemProperty $regPath -Name NoModify -Value 1 -Force | Out-Null
         New-ItemProperty $regPath -Name NoRepair -Value 1 -Force | Out-Null
-        New-ItemProperty $regPath -Name Publisher -Value "Romanitho" -Force | Out-Null
+        New-ItemProperty $regPath -Name Publisher -Value "Sturcz" -Force | Out-Null
         New-ItemProperty $regPath -Name URLInfoAbout -Value "https://github.com/user1722/Winget-AutoUpdate" -Force | Out-Null
         New-ItemProperty $regPath -Name WAU_NotificationLevel -Value $NotificationLevel -Force | Out-Null
         if ($WAUVersion -match "-"){
