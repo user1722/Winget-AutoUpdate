@@ -17,6 +17,13 @@ function Get-WingetOutdatedApps
    {
       return "An unusual thing happened (maybe all apps are upgraded):`n$upgradeResult"
    }
+   # Check if the output indicates an error
+   if ($upgradeResult -match "Failed when opening source\(") {
+   # Handle the error by resetting and updating the source
+   $Sourcereset = & $Winget source reset --force | Out-String
+   $Sourceupdate = & $Winget source update | Out-String
+   return "Error occurred: $upgradeResult`nSourcereset: $Sourcereset`nSourceupdate: $Sourceupdate"
+  }
 
    # Split winget output to lines
    $lines = $upgradeResult.Split([Environment]::NewLine) | Where-Object -FilterScript {
