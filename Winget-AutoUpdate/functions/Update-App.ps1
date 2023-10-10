@@ -8,6 +8,7 @@ function Update-App
    (
       $app
    )
+   $source = "winget"
    $ReleaseNoteURL = Get-AppInfo $app.Id
    if ($ReleaseNoteURL)
    {
@@ -39,12 +40,12 @@ function Update-App
    if ($ModsOverride)
    {
       Write-ToLog -LogMsg ('-> Running (overriding default): Winget upgrade --id {0} --accept-package-agreements --accept-source-agreements --override {1}' -f $app.Id, $ModsOverride)
-      & $Winget upgrade --id $($app.Id) --accept-package-agreements --accept-source-agreements --override $ModsOverride | Tee-Object -FilePath $LogFile -Append
+      & $Winget upgrade --id $($app.Id) --accept-package-agreements --accept-source-agreements -s $source --override $ModsOverride | Tee-Object -FilePath $LogFile -Append
    }
    else
    {
       Write-ToLog -LogMsg ('-> Running: Winget upgrade --id {0} --accept-package-agreements --accept-source-agreements -h' -f $app.Id)
-      & $Winget upgrade --id $($app.Id) --accept-package-agreements --accept-source-agreements -h | Tee-Object -FilePath $LogFile -Append
+      & $Winget upgrade --id $($app.Id) --accept-package-agreements --accept-source-agreements -s $source -h | Tee-Object -FilePath $LogFile -Append
    }
 
    if ($ModsUpgrade)
@@ -75,12 +76,12 @@ function Update-App
       if ($ModsOverride)
       {
          Write-ToLog -LogMsg ('-> Running (overriding default): Winget install --id {0} --accept-package-agreements --accept-source-agreements --force --override {1}' -f $app.Id, $ModsOverride)
-         & $Winget install --id $($app.Id) --accept-package-agreements --accept-source-agreements --force --override $ModsOverride | Tee-Object -FilePath $LogFile -Append
+         & $Winget install --id $($app.Id) --accept-package-agreements --accept-source-agreements -s $source --force --override $ModsOverride | Tee-Object -FilePath $LogFile -Append
       }
       else
       {
          Write-ToLog -LogMsg ('-> Running: Winget install --id {0} --accept-package-agreements --accept-source-agreements --force -h' -f $app.Id)
-         & $Winget install --id $($app.Id) --accept-package-agreements --accept-source-agreements --force -h | Tee-Object -FilePath $LogFile -Append
+         & $Winget install --id $($app.Id) --accept-package-agreements --accept-source-agreements -s $source --force -h | Tee-Object -FilePath $LogFile -Append
       }
 
       if ($ModsInstall)
