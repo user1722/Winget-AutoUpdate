@@ -69,7 +69,6 @@ Microsoft.Teams
 Logitech.GHUB
 Dell.DisplayManager
 VMware.WorkstationPlayer
-EclipseAdoptium.Temurin.11.JDK
 Microsoft.Azure.StorageExplorer
 Microsoft.PowerBI
 dbeaver.dbeaver
