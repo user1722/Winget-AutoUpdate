@@ -72,3 +72,9 @@ VMware.WorkstationPlayer
 Microsoft.Azure.StorageExplorer
 Microsoft.PowerBI
 dbeaver.dbeaver
+angryziber.AngryIPScanner
+Softerra.LDAPBrowser
+Microsoft.ASPNetCore.5-x64
+Microsoft.ASPNetCore.6-x64
+Microsoft.SQLServerManagementStudio
+Famatech.AdvancedIPScanner
