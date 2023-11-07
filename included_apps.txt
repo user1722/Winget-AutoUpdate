@@ -70,7 +70,6 @@ Logitech.GHUB
 Dell.DisplayManager
 VMware.WorkstationPlayer
 Microsoft.Azure.StorageExplorer
-Microsoft.PowerBI
 dbeaver.dbeaver
 angryziber.AngryIPScanner
 Softerra.LDAPBrowser
