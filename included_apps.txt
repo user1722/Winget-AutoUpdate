@@ -77,3 +77,4 @@ Microsoft.ASPNetCore.5-x64
 Microsoft.ASPNetCore.6-x64
 Microsoft.SQLServerManagementStudio
 Famatech.AdvancedIPScanner
+Lansweeper.LsAgent
