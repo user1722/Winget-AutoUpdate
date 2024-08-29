@@ -1,5 +1,11 @@
 #Function to make actions after WAU update
 
+#Sturcz Anpassung
+#Links mit Romanitho austauschen gegen user1722
+#//github.com/user1722/
+
+
+
 function Invoke-PostUpdateActions {
 
     #log
@@ -17,7 +23,7 @@ function Invoke-PostUpdateActions {
         New-ItemProperty $regPath -Name NoModify -Value 1 -Force
         New-ItemProperty $regPath -Name NoRepair -Value 1 -Force
         New-ItemProperty $regPath -Name Publisher -Value "Romanitho" -Force
-        New-ItemProperty $regPath -Name URLInfoAbout -Value "https://github.com/Romanitho/Winget-AutoUpdate" -Force
+        New-ItemProperty $regPath -Name URLInfoAbout -Value "https://github.com/user1722/Winget-AutoUpdate" -Force
         New-ItemProperty $regPath -Name InstallLocation -Value $WorkingDir -Force
         New-ItemProperty $regPath -Name UninstallString -Value "powershell.exe -noprofile -executionpolicy bypass -file `"$WorkingDir\WAU-Uninstall.ps1`"" -Force
         New-ItemProperty $regPath -Name QuietUninstallString -Value "powershell.exe -noprofile -executionpolicy bypass -file `"$WorkingDir\WAU-Uninstall.ps1`"" -Force
@@ -154,7 +160,7 @@ function Invoke-PostUpdateActions {
 
     #Add 1 to counter file
     try {
-        Invoke-RestMethod -Uri "https://github.com/Romanitho/Winget-AutoUpdate/releases/download/v$($WAUConfig.DisplayVersion)/WAU_InstallCounter" | Out-Null
+        Invoke-RestMethod -Uri "https://github.com/user1722/Winget-AutoUpdate/releases/download/v$($WAUConfig.DisplayVersion)/WAU_InstallCounter" | Out-Null
     }
     catch {
         Write-ToLog "-> Not able to report installation." "Yellow"
