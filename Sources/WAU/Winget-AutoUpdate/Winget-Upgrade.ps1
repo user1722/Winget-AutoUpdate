@@ -261,7 +261,11 @@ if (Test-Network) {
 				
 				# Array zum Sammeln der fehlgeschlagenen Links
 				$FailedLinks = @()
-				$file_data = ($URLcontentIncludedModMS -split '"').Trim() | Where-Object { $_ -match "install.ps1|preinstall.ps1|installed.ps1|override.txt|preuninstall.ps1|uninstall.ps1|uninstalled.ps1|upgrade.ps1" -and $_ -notmatch '/' }
+				
+				$file_data = ($URLcontentIncludedModMS -split '"').Trim() | 
+				Where-Object { $_ -match "install.ps1|preinstall.ps1|installed.ps1|override.txt|preuninstall.ps1|uninstall.ps1|uninstalled.ps1|upgrade.ps1" -and $_ -notmatch '/' -and $_ -notmatch ", \(File\)" } | 
+				Select-Object -Unique
+				
 				Write-ToLog "Mods Download:"
 				foreach ($line in $file_data) {
 					Write-ToLog "$line"
