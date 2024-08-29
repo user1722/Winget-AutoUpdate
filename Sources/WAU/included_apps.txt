@@ -68,3 +68,9 @@ Jabra.Direct
 Microsoft.Teams
 Logitech.GHUB
 Dell.DisplayManager
+AdoptOpenJDK.OpenJDK.11
+Apple.AppleApplicationSupport.x64
+Apple.AppleApplicationSupport.x86
+Apple.AppleMobileDeviceSupport
+Apple.AppleSoftwareUpdate
+Zoom.Zoom
