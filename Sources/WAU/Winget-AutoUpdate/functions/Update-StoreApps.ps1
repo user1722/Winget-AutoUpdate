@@ -1,5 +1,8 @@
 #Function to force an upgrade of Store Apps
 
+#Sturcz Anpassung
+#Server Install aktiviert
+
 Function Update-StoreApps {
 
 	$info_string = "-> Forcing an upgrade of Store Apps..."
@@ -10,7 +13,7 @@ Function Update-StoreApps {
 	Write-ToLog $info_string "yellow"
 
 	#If not WSB or Server, upgrade Microsoft Store Apps!
-	if (!(Test-Path "${env:SystemDrive}\Users\WDAGUtilityAccount") -and (Get-CimInstance Win32_OperatingSystem).Caption -notmatch "Windows Server") {
+	#if (!(Test-Path "${env:SystemDrive}\Users\WDAGUtilityAccount") -and (Get-CimInstance Win32_OperatingSystem).Caption -notmatch "Windows Server") {
 
 		try {
 			# Can't get it done with Get-CimInstance, using deprecated Get-WmiObject
@@ -25,8 +28,8 @@ Function Update-StoreApps {
 			Write-ToLog $fail_string "red"
 			return $false
 		}
-	}
-	else {
-		Write-ToLog $irrelevant_string "yellow"
-	}
+	#}
+	#else {
+	#	Write-ToLog $irrelevant_string "yellow"
+	#}
 }
