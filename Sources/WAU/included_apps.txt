@@ -74,3 +74,5 @@ Apple.AppleApplicationSupport.x86
 Apple.AppleMobileDeviceSupport
 Apple.AppleSoftwareUpdate
 Zoom.Zoom
+Microsoft.SQLServerManagementStudio
+Azul.Zulu.8.JDK
