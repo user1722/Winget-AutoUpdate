@@ -1,5 +1,11 @@
 #Function to get the latest WAU available version on Github
 
+#Sturcz Anpassung
+#Links mit Romanitho austauschen gegen user1722
+#//github.com/user1722/
+
+
+
 function Get-WAUAvailableVersion {
 
     #Get Github latest version
@@ -10,11 +16,11 @@ function Get-WAUAvailableVersion {
 
         try {
             #Get latest pre-release info
-            $WAUurl = 'https://api.github.com/repos/Romanitho/Winget-AutoUpdate/releases'
+            $WAUurl = 'https://api.github.com/repos/user1722/Winget-AutoUpdate/releases'
             $WAUAvailableVersion = ((Invoke-WebRequest $WAUurl -UseBasicParsing | ConvertFrom-Json)[0].tag_name).Replace("v", "")
         }
         catch {
-            $url = "https://github.com/Romanitho/Winget-AutoUpdate/releases"
+            $url = "https://github.com/user1722/Winget-AutoUpdate/releases"
             $link = ((Invoke-WebRequest $url -UseBasicParsing).Links.href -match "/Winget-AutoUpdate/releases/tag/v*")[0]
             $WAUAvailableVersion = $link.Trim().Split("v")[-1]
         }
@@ -24,11 +30,11 @@ function Get-WAUAvailableVersion {
 
         try {
             #Get latest stable info
-            $WAUurl = 'https://api.github.com/repos/Romanitho/Winget-AutoUpdate/releases/latest'
+            $WAUurl = 'https://api.github.com/repos/user1722/Winget-AutoUpdate/releases/latest'
             $WAUAvailableVersion = ((Invoke-WebRequest $WAUurl -UseBasicParsing | ConvertFrom-Json)[0].tag_name).Replace("v", "")
         }
         catch {
-            $url = "https://github.com/Romanitho/Winget-AutoUpdate/releases/latest"
+            $url = "https://github.com/user1722/Winget-AutoUpdate/releases/latest"
             $link = ((Invoke-WebRequest $url -UseBasicParsing).Links.href -match "/Winget-AutoUpdate/releases/tag/v*")[0]
             $WAUAvailableVersion = $link.Trim().Split("v")[-1]
         }
