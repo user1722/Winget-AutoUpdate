@@ -1,5 +1,9 @@
 <# LOAD FUNCTIONS #>
 
+# Sturcz Anpassungen Funktionen eingefügt.
+
+
+
 #Get the Working Dir
 $Script:WorkingDir = $PSScriptRoot
 #Get Functions
@@ -170,7 +174,38 @@ if (Test-Network) {
                 Write-ToLog "WAU uses External Lists from: $ListPathClean"
                 if ($ListPathClean -ne "GPO") {
                     $NewList = Test-ListPath $ListPathClean $WAUConfig.WAU_UseWhiteList $WAUConfig.InstallLocation.TrimEnd(" ", "\")
-                    if ($ReachNoPath) {
+                   
+					#Sturcz Anfang
+					# Test if the list path is a URL
+					if ($ListPathClean -like "http*" ) {
+					try {
+						# Download the content from the URL
+						$URLcontentIncludedMS = (Invoke-WebRequest -Uri $ListPathClean -UseBasicParsing).Content
+
+						# Write the content to the appropriate file based on the list type
+						if ($WAUConfig.WAU_UseWhiteList) {
+							$URLcontentIncludedMS | Out-File -FilePath "$WorkingDir\included_apps.txt" -Force
+							(Get-Content "$WorkingDir\included_apps.txt" | Where-Object { $_.Trim() -ne "" }) | Set-Content "$WorkingDir\included_apps.txt"
+							$Script:ReachNoPath = $False
+						}
+						else {
+							$URLcontentIncludedMS | Out-File -FilePath "$WorkingDir\excluded_apps.txt" -Force
+							(Get-Content "$WorkingDir\excluded_apps.txt" | Where-Object { $_.Trim() -ne "" }) | Set-Content "$WorkingDir\excluded_apps.txt"
+							$Script:ReachNoPath = $False
+						}
+					}
+					catch {
+						Write-ToLog "Error downloading list content from $ListPathClean : $_" "Red"
+						$Script:ReachNoPath = $True
+						}
+					}
+					else {
+						Write-ToLog "Invalid URL format for list path: $ListPathClean" "Red"
+					$Script:ReachNoPath = $True
+					}
+					#sturcz ende		
+
+				   if ($ReachNoPath) {
                         Write-ToLog "Couldn't reach/find/compare/copy from $ListPathClean..." "Red"
                         if ($ListPathClean -notlike "http*") {
                             if (Test-Path -Path "$ListPathClean" -PathType Leaf) {
@@ -213,6 +248,57 @@ if (Test-Network) {
                 else {
                     $NewMods, $DeletedMods = Test-ModsPath $ModsPathClean $WAUConfig.InstallLocation.TrimEnd(" ", "\")
                 }
+				
+				#Sturcz Anfang
+				# Get External ModPath from Github
+				if ($WAUConfig.WAU_ModsPath -like "*git*") {
+					Write-ToLog "Using Git as Mod Path"
+					$URLtoTestModMS = $WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/")
+					try {
+						$URLcontentIncludedModMS = (Invoke-WebRequest -Uri $URLtoTestModMS -UseBasicParsing).Content
+
+				# Extrahiere Dateinamen aus dem URL-Inhalt
+				
+				# Array zum Sammeln der fehlgeschlagenen Links
+				$FailedLinks = @()
+				$file_data = ($URLcontentIncludedModMS -split '"').Trim() | Where-Object { $_ -match "install.ps1|preinstall.ps1|installed.ps1|override.txt|preuninstall.ps1|uninstall.ps1|uninstalled.ps1|upgrade.ps1" -and $_ -notmatch '/' }
+				Write-ToLog "Mods Download:"
+				foreach ($line in $file_data) {
+					Write-ToLog "$line"
+					$Linedata = $line
+					$URLtoTestMod = "https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/Winget-AutoUpdate/mods/$Linedata"
+					try {
+					$URLcontentIncludedMod = (Invoke-WebRequest -Uri $URLtoTestMod -UseBasicParsing).Content
+					$URLcontentIncludedMod | Out-File -FilePath "$($WAUConfig.InstallLocation.TrimEnd(" ", "\"))\mods\$Linedata" -Force
+					} catch {
+						# Fügen Sie den fehlgeschlagenen Link zum Array hinzu
+						$FailedLinks += $URLtoTestMod
+					}
+				}
+				# Wenn alle Links fehlgeschlagen sind, lösen Sie den Fehler aus
+				if ($FailedLinks.Count -eq $file_data.Count) {
+				Write-ToLog "Error downloading all mods. Failed to download mods from the following links:" "Red"
+				foreach ($failedLink in $FailedLinks) {
+					Write-ToLog $failedLink "Red"
+				}
+				}
+				else{
+					Write-ToLog "Newer Mod downloaded/copied to local path from GitHub: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))/mods" "Yellow"
+					    Write-ToLog "Following Links Failed"	
+						foreach ($failedLink in $FailedLinks) {
+						Write-ToLog $failedLink "Red"
+						}
+					$Script:ReachNoPath = $False
+				}
+					
+				}
+				catch {
+					Write-ToLog "Error downloading mods from $URLtoTestModMS : $_" "Red"
+					$Script:ReachNoPath = $True
+				}
+				}
+				#Sturcz Ende
+				
                 if ($ReachNoPath) {
                     Write-ToLog "Couldn't reach/find/compare/copy from $ModsPathClean..." "Red"
                     $Script:ReachNoPath = $False
@@ -407,13 +493,30 @@ if (Test-Network) {
             }
         }
     }
+	#Sturcz Anfang
+	else {
+	Write-ToLog "Critical: Winget Komponenten Fehlen" "red"
+   	Install-Prerequisites
+	Update-WinGet
+	$TestWinget = Get-WingetCmd
+	if ($Winget) {
+
+	Write-ToLog "Critical: Winget wurde Nachinstalliert und ist beim naechsten mal einsetzbar" "red"
+	}
     else {
         Write-ToLog "Critical: Winget not installed or detected, exiting..." "red"
         New-Item "$WorkingDir\logs\error.txt" -Value "Winget not installed or detected" -Force
         Write-ToLog "End of process!" "Cyan"
         Exit 1
     }
+ }
 }
+else{
+	Write-ToLog "No Internet Connection"
+	Write-ToLog "End of process!" "Cyan"
+    Exit 1
+}
+#Sturcz Ende
 
 #End
 Write-ToLog "End of process!" "Cyan"
