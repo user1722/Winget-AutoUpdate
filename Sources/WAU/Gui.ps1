@@ -1,4 +1,11 @@
 <#
+
+Sturcz Anpassung
+Links mit Romanitho austauschen gegen user1722
+//github.com/user1722/
+
+
+
 .SYNOPSIS
 Install and configure Winget-AutoUpdate
 
@@ -220,7 +227,7 @@ function Start-Installations {
 
     if ($CMTrace) {
         Start-PopUp "Installing CMTrace..."
-        $CMToolkitLink = "https://github.com/Romanitho/Winget-Install-GUI/raw/main/Tools/cmtrace.exe"
+        $CMToolkitLink = "https://github.com/user1722/Winget-Install-GUI/raw/main/Tools/cmtrace.exe"
         $CMToolkitPath = "C:\Tools\CMTrace.exe"
         Invoke-WebRequest $CMToolkitLink -OutFile (New-Item -Path $CMToolkitPath -Force)
         Start-Sleep 1
@@ -299,7 +306,7 @@ function Get-WAUConfiguratorLatestVersion {
     ### FORM CREATION ###
 
     #Get latest stable info
-    $WAUConfiguratorURL = 'https://api.github.com/repos/Romanitho/Winget-AutoUpdate/releases/latest'
+    $WAUConfiguratorURL = 'https://api.github.com/repos/user1722/Winget-AutoUpdate/releases/latest'
     $WAUConfiguratorLatestVersion = (((Invoke-WebRequest $WAUConfiguratorURL -UseBasicParsing | ConvertFrom-Json)[0].tag_name).Replace("v", "")).Replace("-", ".")
 
     if ([version]$WAUConfiguratorVersion -lt [version]$WAUConfiguratorLatestVersion) {
@@ -344,7 +351,7 @@ function Get-WAUConfiguratorLatestVersion {
         $GithubButton.add_click(
             {
                 $UpdateWindow.Topmost = $false
-                [System.Diagnostics.Process]::Start("https://github.com/Romanitho/Winget-AutoUpdate/releases")
+                [System.Diagnostics.Process]::Start("https://github.com/user1722/Winget-AutoUpdate/releases")
             }
         )
 
@@ -356,7 +363,7 @@ function Get-WAUConfiguratorLatestVersion {
                 $response = $WAUConfiguratorSaveFile.ShowDialog() # $response can return OK or Cancel
                 if ( $response -eq 'OK' ) {
                     Start-PopUp "Downloading WAU Configurator $WAUConfiguratorLatestVersion..."
-                    $WAUConfiguratorDlLink = "https://github.com/Romanitho/Winget-AutoUpdate/releases/download/v$WAUConfiguratorLatestVersion/WAU-Configurator.zip"
+                    $WAUConfiguratorDlLink = "https://github.com/user1722/Winget-AutoUpdate/releases/download/v$WAUConfiguratorLatestVersion/WAU-Configurator.zip"
                     Invoke-WebRequest -Uri $WAUConfiguratorDlLink -OutFile $WAUConfiguratorSaveFile.FileName -UseBasicParsing
                     $UpdateWindow.DialogResult = [System.Windows.Forms.DialogResult]::OK
                     $UpdateWindow.Close()
@@ -483,7 +490,7 @@ function Start-InstallGUI {
     <Button x:Name="CloseButton" Content="Close" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Width="90" Height="24"/>
     <Button x:Name="InstallButton" Content="Install" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,105,10" Width="90" Height="24"/>
     <TextBlock x:Name="WAUConfiguratorLinkLabel" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,14">
-        <Hyperlink NavigateUri="https://github.com/Romanitho/Winget-AutoUpdate">More info about WAU</Hyperlink>
+        <Hyperlink NavigateUri="https://github.com/user1722/Winget-AutoUpdate">More info about WAU</Hyperlink>
     </TextBlock>
 </Grid>
 </Window>
@@ -542,7 +549,7 @@ function Start-InstallGUI {
 
     $WAUMoreInfoLabel.Add_PreviewMouseDown(
         {
-            [System.Diagnostics.Process]::Start("https://github.com/Romanitho/Winget-AutoUpdate")
+            [System.Diagnostics.Process]::Start("https://github.com/user1722/Winget-AutoUpdate")
         }
     )
 
@@ -715,7 +722,7 @@ function Start-InstallGUI {
     ##
     $WAUConfiguratorLinkLabel.Add_PreviewMouseDown(
         {
-            [System.Diagnostics.Process]::Start("https://github.com/Romanitho/Winget-AutoUpdate")
+            [System.Diagnostics.Process]::Start("https://github.com/user1722/Winget-AutoUpdate")
         }
     )
 
