@@ -1,4 +1,11 @@
 <#
+
+Sturcz Anpassung
+Links mit Romanitho austauschen gegen user1722
+//github.com/user1722/
+
+
+
 .SYNOPSIS
 Handle user interaction from shortcuts and show a Toast notification
 
@@ -10,7 +17,7 @@ Open the Log file from Winget-AutoUpdate installation location
 
 .PARAMETER Help
 Open the Web Help page
-https://github.com/Romanitho/Winget-AutoUpdate
+https://github.com/user1722/Winget-AutoUpdate
 
 .EXAMPLE
 .\user-run.ps1 -Logs
@@ -57,7 +64,7 @@ if ($Logs) {
 	}
 }
 elseif ($Help) {
-	Start-Process "https://github.com/Romanitho/Winget-AutoUpdate"
+	Start-Process "https://github.com/user1722/Winget-AutoUpdate"
 }
 else {
 	try {
