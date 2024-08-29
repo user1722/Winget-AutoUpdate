@@ -68,7 +68,7 @@ Function Update-WinGet {
 			}
 		}
 		#Sturcz Ende
-        }
+        
 
         #Remove WinGet MSIXBundle
         Remove-Item -Path $WingetInstaller -Force -ErrorAction SilentlyContinue
