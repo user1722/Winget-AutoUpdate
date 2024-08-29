@@ -1,8 +1,14 @@
 #Function to update WAU
 
+#Sturcz Anpassung
+#Links mit Romanitho austauschen gegen user1722
+#//github.com/user1722/
+
+
+
 function Update-WAU {
 
-    $OnClickAction = "https://github.com/Romanitho/Winget-AutoUpdate/releases"
+    $OnClickAction = "https://github.com/user1722/Winget-AutoUpdate/releases"
     $Button1Text = $NotifLocale.local.outputs.output[10].message
 
     #Send available update notification
@@ -20,7 +26,7 @@ function Update-WAU {
 
         #Download the zip
         Write-ToLog "Downloading the GitHub Repository version $WAUAvailableVersion" "Cyan"
-        Invoke-RestMethod -Uri "https://github.com/Romanitho/Winget-AutoUpdate/releases/download/v$($WAUAvailableVersion)/WAU.zip" -OutFile $ZipFile
+        Invoke-RestMethod -Uri "https://github.com/user1722/Winget-AutoUpdate/releases/download/v$($WAUAvailableVersion)/WAU.zip" -OutFile $ZipFile
 
         #Extract Zip File
         Write-ToLog "Unzipping the WAU Update package" "Cyan"
