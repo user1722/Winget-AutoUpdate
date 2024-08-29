@@ -22,10 +22,12 @@ Function Update-StoreApps {
 			$wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
 			Write-ToLog $action_string "green"
 			$wmiObj.UpdateScanMethod() | Out-Null
+			Write-ToLog "Store Update Success"
 			return $true
 		}
 		catch {
 			Write-ToLog $fail_string "red"
+			Write-ToLog "Store Update failed exit"
 			return $false
 		}
 	#}

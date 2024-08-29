@@ -1,5 +1,7 @@
 #Function to download and update WinGet
 
+#Sturcz Anpassung an Catch für Server und fehlerbehebung
+
 Function Update-WinGet {
 
     Write-ToLog "Checking if WinGet is installed/up to date." "Yellow"
@@ -53,11 +55,19 @@ Function Update-WinGet {
             $return = "success"
 
         }
+		#Sturcz Anfang
         catch {
-            Write-ToLog "-> Failed to install WinGet MSIXBundle for App Installer...`n" "red"
-            #Force Store Apps to update
-            Update-StoreApps
-            $return = "fail"
+			Write-ToLog "-> Failed to install WinGet MSIXBundle for App Installer...`n" "red"
+			#Force Store Apps to update
+			$storeAppsResult = Update-StoreApps
+
+			if ($storeAppsResult) {
+				$return = "success"
+			} else {
+				$return = "fail"
+			}
+		}
+		#Sturcz Ende
         }
 
         #Remove WinGet MSIXBundle
