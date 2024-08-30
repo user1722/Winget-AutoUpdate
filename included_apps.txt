@@ -11,6 +11,7 @@ Apple.AppleApplicationSupport.x64
 Apple.AppleApplicationSupport.x86
 Apple.AppleMobileDeviceSupport
 Apple.AppleSoftwareUpdate
+Apple.Bonjour
 Apple.iTunes
 ArtifexSoftware.GhostScript
 Audacity.Audacity
