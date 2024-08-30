@@ -78,3 +78,4 @@ Microsoft.SQLServerManagementStudio
 Azul.Zulu.8.JDK
 Zoom.Zoom.EXE
 Microsoft.PowerAutomateDesktop
+Microsoft.Teams.Classic
