@@ -273,7 +273,7 @@ if (Test-Network) {
 					$URLtoTestMod = "https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/Winget-AutoUpdate/mods/$Linedata"
 					try {
 					$URLcontentIncludedMod = (Invoke-WebRequest -Uri $URLtoTestMod -UseBasicParsing).Content
-					$URLcontentIncludedMod | Out-File -FilePath "$($WAUConfig.InstallLocation.TrimEnd(" ", "\"))\mods\$Linedata" -Force
+					[System.IO.File]::WriteAllText("$($WAUConfig.InstallLocation.TrimEnd(" ", "\"))\mods\$Linedata", $URLcontentIncludedMod)
 					} catch {
 						# Fügen Sie den fehlgeschlagenen Link zum Array hinzu
 						$FailedLinks += $URLtoTestMod
