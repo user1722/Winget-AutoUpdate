@@ -1,29 +1,39 @@
-﻿#Beginning of App Name string to Silently Uninstall (MSI/NSIS/INNO/EXE with defined silent uninstall in registry)
-#Multiple: "app1*","app2*", required wildcard (*) after; search is done with "-like"!
-$App = @("Microsoft Visual C++ 2012 Redistributabl*","Microsoft Visual C++ 2012 Redistributabl*","Microsoft Visual C++ 2012 Redistributabl*")
+﻿# ==============================
+# Skript zur Verwaltung von Teams Machine-Wide Installer
+# ==============================
+# Parameter zum Anpassen:
+# $App: Name der Anwendung für die Deinstallation (wildcard `*` verwenden)
+# $Proc: Name der Prozesse, die gestoppt werden sollen (wildcard `*` verwenden)
+# $AppID: Winget-ID der Anwendung zur Neuinstallation
+# $Wait: Prozesse, auf deren Beendigung gewartet werden soll (wildcard `*` verwenden)
+# $timeoutSeconds: Zeit in Sekunden, nach der das Warten auf das Beenden der Prozesse abbricht
 
-$Proc = @("")
+$App = @("Teams Machine-Wide Installer")
+$Proc = @("teams_updater")
+$AppID = @("Microsoft.Teams.Classic")
+$Wait = @("teams_updater")
+$timeoutSeconds = 600  # Timeout in Sekunden (Standard: 600 Sekunden = 10 Minuten)
 
-#Install App from Winget Repo, multiple: "appID1","appID2". Example:
-#$AppID = @("Microsoft.PowerToys")
-$AppID = @("Microsoft.VCRedist.2012.x64", "Microsoft.VCRedist.2012.x86")
-
-#Beginning of Process Name to Wait for to End - optional wildcard (*) after, without .exe, multiple: "proc1","proc2"
-$Wait = @("")
-
-function Wait-ModsProc ($Wait) {
-    foreach ($process in $Wait)
-    {
-        Get-Process $process -ErrorAction SilentlyContinue | Foreach-Object { $_.WaitForExit() }
+# Funktion zum Warten auf das Beenden von Prozessen mit Timeout
+function Wait-ModsProc ($Wait, $timeoutSeconds) {
+    $startTime = Get-Date
+    foreach ($process in $Wait) {
+        while (Get-Process -Name $process -ErrorAction SilentlyContinue) {
+            Start-Sleep -Seconds 1
+            if ((Get-Date) -gt $startTime.AddSeconds($timeoutSeconds)) {
+                Write-Host "Timeout reached while waiting for process $process to exit."
+                return $false
+            }
+        }
     }
-    Return
+    return $true
 }
 
+# Funktion zur Deinstallation der Anwendung
 function Uninstall-ModsApp ($App) {
     foreach ($app in $App)
     {
         $InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
-   
         foreach ($obj in $InstalledSoftware){
             if ($obj.GetValue('DisplayName') -like $App) {
                 $UninstallString = $obj.GetValue('UninstallString')
@@ -74,10 +84,11 @@ function Uninstall-ModsApp ($App) {
                         }
                     }
                 }
-                
+                $x64 = $true
+                break
             }
         }
-        
+        if (!$x64) {
             $InstalledSoftware = Get-ChildItem "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
             foreach ($obj in $InstalledSoftware){
                 if ($obj.GetValue('DisplayName') -like $App) {
@@ -129,10 +140,10 @@ function Uninstall-ModsApp ($App) {
                             }
                         }
                     }
-                    
+                    break
                 }
-            
-        }break
+            }
+        }
     }
     Return
 }
@@ -164,35 +175,28 @@ function Stop-ModsProc ($Proc) {
 	}
 
 
-
+# Hauptlogik
 
 if ($Proc) {
     Stop-ModsProc $Proc
-    }
+}
 
-if ($App)
-{
+$APPuninstall = "false"	
+$APP32location = "C:\Program Files (x86)\Teams Installer\Teams.exe"
+
+if (Test-Path -Path $APP32location) {
     $APPuninstall = "True"
     Uninstall-ModsApp $App
-	if ($Wait) {
-    Wait-ModsProc $Wait
+    if ($Wait) {
+        Wait-ModsProc $Wait $timeoutSeconds
+    }
 }
 
+if ($APPuninstall -eq "True") {
+    Install-ModsApp $AppID
+    if ($Wait) {
+        Wait-ModsProc $Wait $timeoutSeconds
+    }
+} else { 
+    Write-Host "Keine Deinstallation erforderlich, da die Anwendung nicht gefunden wurde."
 }
-
-
-if($Appuninstall -eq "True")
-{
-	Install-ModsApp $AppID
-	if ($Wait) {
-    Wait-ModsProc $Wait
-}
-
-}
-else
-{ 
-
-}
-
-
-
