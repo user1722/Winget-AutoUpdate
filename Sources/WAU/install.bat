@@ -4,7 +4,7 @@
 :: Put WAU Arguments here ::
 ::::::::::::::::::::::::::::
 
-SET arguments=-UpdatesAtLogon -NoClean -UpdatesInterval Weekly -StartMenuShortcut -DesktopShortcut -RunOnMetered -NotificationLevel SuccessOnly -UseWhiteList -ListPath https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/Sources/WAU/included_apps.txt -ModsPath https://github.com/user1722/Winget-AutoUpdate/tree/main/Sources/WAU/Winget-AutoUpdate/mods -DoNotUpdate -DisableWAUAutoUpdate -Silent
+SET arguments=-UpdatesAtLogon -NoClean -UpdatesInterval Weekly -StartMenuShortcut -DesktopShortcut -RunOnMetered -NotificationLevel SuccessOnly -UseWhiteList -ListPath https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/included_apps.txt -ModsPath https://github.com/user1722/Winget-AutoUpdate/tree/main/Winget-AutoUpdate/mods -DoNotUpdate -DisableWAUAutoUpdate -Silent
 
 
 ::::::::::::::::::::::::::::
