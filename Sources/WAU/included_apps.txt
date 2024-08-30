@@ -31,7 +31,6 @@ Greenshot.Greenshot
 GNE.DualMonitorTools
 IrfanSkiljan.IrfanView
 JAMSoftware.TreeSize
-JAMSoftware.TreeSize.Free
 Jabra.Direct
 karakun.OpenWebStart
 Logitech.GHUB
