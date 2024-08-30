@@ -76,3 +76,4 @@ Apple.AppleSoftwareUpdate
 Zoom.Zoom
 Microsoft.SQLServerManagementStudio
 Azul.Zulu.8.JDK
+Zoom.Zoom.EXE
