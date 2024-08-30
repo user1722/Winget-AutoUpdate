@@ -270,7 +270,13 @@ if (Test-Network) {
 				foreach ($line in $file_data) {
 					Write-ToLog "$line"
 					$Linedata = $line
-					$URLtoTestMod = "https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/Winget-AutoUpdate/mods/$Linedata"
+					#$URLtoTestMod = "https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/Winget-AutoUpdate/mods/$Linedata"
+					# Replace the base URL and ensure it’s correctly formatted for raw.githubusercontent.com
+					$ModsPathClean = $ModsPathClean -replace "https://github.com", "https://raw.githubusercontent.com"
+					# Remove '/tree/' from the URL if it exists
+					$ModsPathClean = $ModsPathClean -replace "/tree/", "/"
+					# Construct the final URL
+					$URLtoTestMod = "$ModsPathClean/$Linedata"
 					try {
 					$URLcontentIncludedMod = (Invoke-WebRequest -Uri $URLtoTestMod -UseBasicParsing).Content
 					[System.IO.File]::WriteAllText("$($WAUConfig.InstallLocation.TrimEnd(" ", "\"))\mods\$Linedata", $URLcontentIncludedMod)
