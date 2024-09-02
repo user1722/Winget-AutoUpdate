@@ -27,6 +27,7 @@ geeksoftwareGmbH.PDF24Creator
 Git.Git
 GitHub.GitHubDesktop
 Google.Chrome
+Google.Chrome.exe
 Greenshot.Greenshot
 GNE.DualMonitorTools
 IrfanSkiljan.IrfanView
