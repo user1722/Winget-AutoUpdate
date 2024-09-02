@@ -59,6 +59,8 @@ Microsoft.DotNet.SDK.5
 Microsoft.DotNet.SDK.6
 Microsoft.DotNet.SDK.7
 Microsoft.DotNet.SDK.8
+Microsoft.msmpi
+Microsoft.msmpisdk
 Microsoft.PowerAutomateDesktop
 Microsoft.ReportBuilder
 Microsoft.SQLServerManagementStudio
