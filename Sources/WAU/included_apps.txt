@@ -19,6 +19,7 @@ Azul.Zulu.8.JDK
 BlueJeans.BlueJeans
 BlenderFoundation.Blender
 Cisco.CiscoWebexMeetings
+Dell.CommandConfigure
 Dell.CommandUpdate
 Dell.CommandUpdate.Universal
 Dell.DisplayManager
