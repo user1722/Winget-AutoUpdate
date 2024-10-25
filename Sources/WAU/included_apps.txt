@@ -35,6 +35,7 @@ IrfanSkiljan.IrfanView
 JAMSoftware.TreeSize
 Jabra.Direct
 karakun.OpenWebStart
+Lansweeper.LsAgent
 Logitech.GHUB
 LogMeIn.GoToMeeting
 Meld.Meld
@@ -63,6 +64,7 @@ Microsoft.DotNet.SDK.8
 Microsoft.msmpi
 Microsoft.msmpisdk
 Microsoft.PowerAutomateDesktop
+Microsoft.PowerShell
 Microsoft.ReportBuilder
 Microsoft.SQLServerManagementStudio
 Microsoft.Teams
