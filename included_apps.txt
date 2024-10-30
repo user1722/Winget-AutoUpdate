@@ -18,6 +18,7 @@ Audacity.Audacity
 Azul.Zulu.8.JDK
 BlueJeans.BlueJeans
 BlenderFoundation.Blender
+Cisco.Webex
 Cisco.CiscoWebexMeetings
 Dell.CommandConfigure
 Dell.CommandUpdate
