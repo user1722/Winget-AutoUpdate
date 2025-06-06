@@ -94,6 +94,7 @@ Microsoft.DotNet.DesktopRuntime.5
 Microsoft.DotNet.HostingBundle.5
 Microsoft.DotNet.Runtime.5
 Microsoft.DotNet.SDK.5
+Microsoft.EdgeWebView2Runtime
 Microsoft.msmpi
 Microsoft.msmpisdk
 Microsoft.PowerAutomateDesktop
