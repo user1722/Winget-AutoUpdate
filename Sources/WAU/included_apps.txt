@@ -359,6 +359,8 @@ PuTTY.PuTTY
 Softerra.LDAPBrowser
 TeamViewer.TeamViewer
 TeamViewer.TeamViewer.Host
+Tencent.WeChat
+Tencent.WeChat.Universal
 TigerVNCproject.TigerVNC
 TigerVNCproject.TigerVNC.Nightly
 VideoLAN.VLC
