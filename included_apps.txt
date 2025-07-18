@@ -367,6 +367,7 @@ Tencent.WeChat
 Tencent.WeChat.Universal
 TigerVNCproject.TigerVNC
 TigerVNCproject.TigerVNC.Nightly
+uvncbvba.UltraVNC
 VideoLAN.VLC
 vim.vim
 vim.vim.nightly
