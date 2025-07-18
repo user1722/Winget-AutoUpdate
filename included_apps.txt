@@ -1,3 +1,4 @@
+MySolutionsNORDIC.NSClient++
 7zip.7zip
 AdoptOpenJDK.OpenJDK.11
 Adobe.Acrobat.Reader.32-bit
