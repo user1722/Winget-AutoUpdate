@@ -28,6 +28,8 @@ BlueJeans.BlueJeans
 BlenderFoundation.Blender
 Cisco.Webex
 Cisco.CiscoWebexMeetings
+CoreFTP.CoreFTP
+CoreFTP.FTPServer
 Dell.CommandConfigure
 Dell.CommandUpdate
 Dell.CommandUpdate.Universal
