@@ -1,18 +1,11 @@
 <#
-
-Sturcz Anpassung
-Links mit Romanitho austauschen gegen user1722
-//github.com/user1722/
-
-
-
 .SYNOPSIS
 Install apps with Winget through Intune or SCCM.
 Can be used standalone.
 
 .DESCRIPTION
 Allow to run Winget in System Context to install your apps.
-https://github.com/user1722/Winget-Install
+https://github.com/Romanitho/Winget-Install
 
 .PARAMETER AppIDs
 Forward Winget App ID to install. For multiple apps, separate with ",". Case sensitive.
@@ -27,7 +20,7 @@ To allow upgrade app if present. Works with AppIDs
 Used to specify logpath. Default is same folder as Winget-Autoupdate project
 
 .PARAMETER WAUWhiteList
-Adds the app to the Winget-AutoUpdate White List. More info: https://github.com/user1722/Winget-AutoUpdate
+Adds the app to the Winget-AutoUpdate White List. More info: https://github.com/Romanitho/Winget-AutoUpdate
 If '-Uninstall' is used, it removes the app from WAU White List.
 
 .EXAMPLE
@@ -61,15 +54,23 @@ param(
 
 <# FUNCTIONS #>
 
-#Include external Functions
-. "$PSScriptRoot\functions\Install-Prerequisites.ps1"
-. "$PSScriptRoot\functions\Update-WinGet.ps1"
-. "$PSScriptRoot\functions\Update-StoreApps.ps1"
-. "$PSScriptRoot\functions\Add-ScopeMachine.ps1"
-. "$PSScriptRoot\functions\Get-WingetCmd.ps1"
-. "$PSScriptRoot\functions\Write-ToLog.ps1"
-. "$PSScriptRoot\functions\Confirm-Installation.ps1"
+#Include external Functions (check first if this script is a symlink or a real file)
+$scriptItem = Get-Item -LiteralPath $MyInvocation.MyCommand.Definition
+$realPath = if ($scriptItem.LinkType) {
+    $targetPath = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($scriptItem.Directory.FullName, $scriptItem.Target))
+    Split-Path -Parent $targetPath
+}
+else {
+    $scriptItem.DirectoryName
+}
 
+. "$realPath\functions\Install-Prerequisites.ps1"
+. "$realPath\functions\Update-StoreApps.ps1"
+. "$realPath\functions\Add-ScopeMachine.ps1"
+. "$realPath\functions\Get-WingetCmd.ps1"
+. "$realPath\functions\Write-ToLog.ps1"
+. "$realPath\functions\Confirm-Installation.ps1"
+. "$realPath\functions\Compare-SemVer.ps1"
 
 #Check if App exists in Winget Repository
 function Confirm-Exist ($AppID) {
@@ -94,15 +95,15 @@ function Test-ModsInstall ($AppID) {
         $ModsPreInstall = ".\mods\$AppID-preinstall.ps1"
     }
     #Else, check in WAU mods
-    elseif (Test-Path "$WAUInstallLocation\mods\$AppID-preinstall.ps1") {
-        $ModsPreInstall = "$WAUInstallLocation\mods\$AppID-preinstall.ps1"
+    elseif (Test-Path "$WAUModsLocation\$AppID-preinstall.ps1") {
+        $ModsPreInstall = "$WAUModsLocation\$AppID-preinstall.ps1"
     }
 
     if (Test-Path ".\mods\$AppID-install.ps1") {
         $ModsInstall = ".\mods\$AppID-install.ps1"
     }
-    elseif (Test-Path "$WAUInstallLocation\mods\$AppID-install.ps1") {
-        $ModsInstall = "$WAUInstallLocation\mods\$AppID-install.ps1"
+    elseif (Test-Path "$WAUModsLocation\$AppID-install.ps1") {
+        $ModsInstall = "$WAUModsLocation\$AppID-install.ps1"
     }
 
     if (Test-Path ".\mods\$AppID-installed-once.ps1") {
@@ -112,8 +113,8 @@ function Test-ModsInstall ($AppID) {
     if (Test-Path ".\mods\$AppID-installed.ps1") {
         $ModsInstalled = ".\mods\$AppID-installed.ps1"
     }
-    elseif (Test-Path "$WAUInstallLocation\mods\$AppID-installed.ps1") {
-        $ModsInstalled = "$WAUInstallLocation\mods\$AppID-installed.ps1"
+    elseif (Test-Path "$WAUModsLocation\$AppID-installed.ps1") {
+        $ModsInstalled = "$WAUModsLocation\$AppID-installed.ps1"
     }
 
     return $ModsPreInstall, $ModsInstall, $ModsInstalledOnce, $ModsInstalled
@@ -126,22 +127,22 @@ function Test-ModsUninstall ($AppID) {
         $ModsPreUninstall = ".\mods\$AppID-preuninstall.ps1"
     }
     #Else, check in WAU mods
-    elseif (Test-Path "$WAUInstallLocation\mods\$AppID-preuninstall.ps1") {
-        $ModsPreUninstall = "$WAUInstallLocation\mods\$AppID-preuninstall.ps1"
+    elseif (Test-Path "$WAUModsLocation\$AppID-preuninstall.ps1") {
+        $ModsPreUninstall = "$WAUModsLocation\$AppID-preuninstall.ps1"
     }
 
     if (Test-Path ".\mods\$AppID-uninstall.ps1") {
         $ModsUninstall = ".\mods\$AppID-uninstall.ps1"
     }
-    elseif (Test-Path "$WAUInstallLocation\mods\$AppID-uninstall.ps1") {
-        $ModsUninstall = "$WAUInstallLocation\mods\$AppID-uninstall.ps1"
+    elseif (Test-Path "$WAUModsLocation\$AppID-uninstall.ps1") {
+        $ModsUninstall = "$WAUModsLocation\$AppID-uninstall.ps1"
     }
 
     if (Test-Path ".\mods\$AppID-uninstalled.ps1") {
         $ModsUninstalled = ".\mods\$AppID-uninstalled.ps1"
     }
-    elseif (Test-Path "$WAUInstallLocation\mods\$AppID-uninstalled.ps1") {
-        $ModsUninstalled = "$WAUInstallLocation\mods\$AppID-uninstalled.ps1"
+    elseif (Test-Path "$WAUModsLocation\$AppID-uninstalled.ps1") {
+        $ModsUninstalled = "$WAUModsLocation\$AppID-uninstalled.ps1"
     }
 
     return $ModsPreUninstall, $ModsUninstall, $ModsUninstalled
@@ -188,7 +189,7 @@ function Install-App ($AppID, $AppArgs) {
             #Add mods if deployed from Winget-Install
             if (Test-Path ".\mods\$AppID-*") {
                 #Check if WAU default install path exists
-                $Mods = "$WAUInstallLocation\mods"
+                $Mods = "$WAUModsLocation"
                 if (Test-Path $Mods) {
                     #Add mods
                     Write-ToLog "-> Add modifications for $AppID to WAU 'mods'"
@@ -225,7 +226,7 @@ function Uninstall-App ($AppID, $AppArgs) {
 
         #Uninstall App
         Write-ToLog "-> Uninstalling $AppID..." "Yellow"
-        $WingetArgs = "uninstall --id $AppID -e --accept-source-agreements -h" -split " "
+        $WingetArgs = "uninstall --id $AppID -e --accept-source-agreements -h $AppArgs" -split " "
         Write-ToLog "-> Running: `"$Winget`" $WingetArgs"
         & "$Winget" $WingetArgs | Where-Object { $_ -notlike "   *" } | Tee-Object -file $LogFile -Append
 
@@ -246,7 +247,7 @@ function Uninstall-App ($AppID, $AppArgs) {
             #Remove mods if deployed from Winget-Install
             if (Test-Path ".\mods\$AppID-*") {
                 #Check if WAU default install path exists
-                $Mods = "$WAUInstallLocation\mods"
+                $Mods = "$WAUModsLocation"
                 if (Test-Path "$Mods\$AppID*") {
                     Write-ToLog "-> Remove $AppID modifications from WAU 'mods'"
                     #Remove mods
@@ -270,7 +271,7 @@ function Uninstall-App ($AppID, $AppArgs) {
 
 #Function to Add app to WAU white list
 function Add-WAUWhiteList ($AppID) {
-    #Check if WAU default intall path is defined
+    #Check if WAU default install path is defined
     if ($WAUInstallLocation) {
         $WhiteList = "$WAUInstallLocation\included_apps.txt"
         #Create included_apps.txt if it doesn't exist
@@ -279,7 +280,7 @@ function Add-WAUWhiteList ($AppID) {
         }
         Write-ToLog "-> Add $AppID to WAU included_apps.txt"
         #Add App to "included_apps.txt"
-        Add-Content -path $WhiteList -Value "`n$AppID" -Force
+        Add-Content -Path $WhiteList -Value "`n$AppID" -Force
         #Remove duplicate and blank lines
         $file = Get-Content $WhiteList | Select-Object -Unique | Where-Object { $_.trim() -ne "" } | Sort-Object
         $file | Out-File $WhiteList
@@ -288,7 +289,7 @@ function Add-WAUWhiteList ($AppID) {
 
 #Function to Remove app from WAU white list
 function Remove-WAUWhiteList ($AppID) {
-    #Check if WAU default intall path exists
+    #Check if WAU default install path exists
     $WhiteList = "$WAUInstallLocation\included_apps.txt"
     if (Test-Path $WhiteList) {
         Write-ToLog "-> Remove $AppID from WAU included_apps.txt"
@@ -318,47 +319,35 @@ $CurrentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Pri
 $Script:IsElevated = $CurrentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 #Get WAU Installed location
-$WAURegKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Winget-AutoUpdate\"
+$WAURegKey = "HKLM:\SOFTWARE\Romanitho\Winget-AutoUpdate\"
 $Script:WAUInstallLocation = Get-ItemProperty $WAURegKey -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InstallLocation
+$Script:WAUModsLocation = Join-Path -Path $WAUInstallLocation -ChildPath "mods"
 
-#LogPath initialisation
-if (!($LogPath)) {
-    #If LogPath is not set, get WAU log path
-    if ($WAUInstallLocation) {
-        $LogPath = "$WAUInstallLocation\Logs"
-    }
-    else {
-        #Else, set a default one
-        $LogPath = "$env:ProgramData\Winget-AutoUpdate\Logs"
-    }
-}
-
-#Logs initialisation
-if (!(Test-Path $LogPath)) {
-    New-Item -ItemType Directory -Force -Path $LogPath | Out-Null
-}
-
-#Log file
+#Log file & LogPath initialization
 if ($IsElevated) {
+    if (!($LogPath)) {
+        #If LogPath is not set, get WAU log path
+        if ($WAUInstallLocation) {
+            $LogPath = "$WAUInstallLocation\Logs"
+        }
+        else {
+            #Else, set a default one
+            $LogPath = "$env:ProgramData\Winget-AutoUpdate\Logs"
+        }
+    }
     $Script:LogFile = "$LogPath\install.log"
 }
 else {
+    if (!($LogPath)) {
+        $LogPath = "C:\Users\$env:UserName\AppData\Roaming\Winget-AutoUpdate\Logs"
+    }
     $Script:LogFile = "$LogPath\install_$env:UserName.log"
 }
 
-#Header (not logged)
-Write-Host "`n "
-Write-Host "`t        888       888        d8888  888     888" -ForegroundColor Magenta
-Write-Host "`t        888   o   888       d88888  888     888" -ForegroundColor Magenta
-Write-Host "`t        888  d8b  888      d88P888  888     888" -ForegroundColor Magenta
-Write-Host "`t        888 d888b 888     d88P 888  888     888" -ForegroundColor Magenta
-Write-Host "`t        888d88888b888    d88P  888  888     888" -ForegroundColor Magenta
-Write-Host "`t        88888P Y88888   d88P   888  888     888" -ForegroundColor Cyan
-Write-Host "`t        8888P   Y8888  d88P    888  888     888" -ForegroundColor Magenta
-Write-Host "`t        888P     Y888 d88P     888   Y8888888P`n" -ForegroundColor Magenta
-Write-Host "`t                    Winget-AutoUpdate`n" -ForegroundColor Cyan
-Write-Host "`t     https://github.com/user1722/Winget-AutoUpdate`n" -ForegroundColor Magenta
-Write-Host "`t________________________________________________________`n`n"
+#Logs initialization
+if (!(Test-Path $LogPath)) {
+    New-Item -ItemType Directory -Force -Path $LogPath | Out-Null
+}
 
 #Log Header
 if ($Uninstall) {
@@ -368,27 +357,32 @@ else {
     Write-ToLog -LogMsg "NEW INSTALL REQUEST" -LogColor "Magenta" -IsHeader
 }
 
-#Get Winget command
-$Script:Winget = Get-WingetCmd
-
 if ($IsElevated -eq $True) {
     Write-ToLog "Running with admin rights.`n"
+
     #Check/install prerequisites
     Install-Prerequisites
-    #Install/Update Winget
-    $null = Update-Winget
+
     #Reload Winget command
     $Script:Winget = Get-WingetCmd
-    #Run Scope Machine funtion
+
+    #Run Scope Machine function
     Add-ScopeMachine
 }
 else {
     Write-ToLog "Running without admin rights.`n"
+
+    #Get Winget command
+    $Script:Winget = Get-WingetCmd
 }
 
 if ($Winget) {
+    #Put apps in an array
+    $AppIDsArray = $AppIDs -split ","
+    Write-Host ""
+
     #Run install or uninstall for all apps
-    foreach ($App_Full in $AppIDs) {
+    foreach ($App_Full in $AppIDsArray) {
         #Split AppID and Custom arguments
         $AppID, $AppArgs = ($App_Full.Trim().Split(" ", 2))
 

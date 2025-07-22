@@ -1,171 +1,232 @@
-<# LOAD FUNCTIONS #>
+#region LOAD FUNCTIONS
 
 # Sturcz Anpassungen Funktionen eingefügt.
 
+# Get the Working Dir
+[string]$Script:WorkingDir = $PSScriptRoot;
 
-
-#Get the Working Dir
-$Script:WorkingDir = $PSScriptRoot
-#Get Functions
-Get-ChildItem "$WorkingDir\functions" -File -Filter "*.ps1" -Depth 0 | ForEach-Object { . $_.FullName }
-
+# Get Functions
+Get-ChildItem -Path "$($Script:WorkingDir)\functions" -File -Filter "*.ps1" -Depth 0 | ForEach-Object { . $_.FullName; }
+#endregion LOAD FUNCTIONS
 
 <# MAIN #>
 
-#Config console output encoding
-$null = cmd /c ''
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+# Config console output encoding
+$null = cmd /c '';
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
+$Script:ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue;
 
-#Log initialisation
-$LogFile = "$WorkingDir\logs\updates.log"
+# Set GitHub Repo
+[string]$Script:GitHub_Repo = "Winget-AutoUpdate";
 
-#Check if running account is system or interactive logon
-$Script:IsSystem = [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem
-#Check for current session ID (O = system without ServiceUI)
-$Script:SessionID = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
+# Log initialization
+[string]$LogFile = [System.IO.Path]::Combine($Script:WorkingDir, 'logs', 'updates.log');
 
-#Check if running as system
-if ($IsSystem) {
+#region Get settings and Domain/Local Policies (GPO) if activated.
+Write-ToLog "Reading WAUConfig";
+$Script:WAUConfig = Get-WAUConfig;
+
+if ($WAUConfig.WAU_ActivateGPOManagement -eq 1) {
+    Write-ToLog "WAU Policies management Enabled.";
+}
+#endregion Get settings and Domain/Local Policies (GPO) if activated.
+
+# Default name of winget repository used within this script
+[string]$DefaultWingetRepoName = 'winget';
+
+#region Winget Source Custom
+# Defining a custom source even if not used below (failsafe suggested by github/sebneus mentioned in issues/823)
+[string]$Script:WingetSourceCustom = $DefaultWingetRepoName;
+
+# Defining custom repository for winget tool (only if GPO management is active)
+if ($Script:WAUConfig.WAU_ActivateGPOManagement) {
+    if ($null -ne $Script:WAUConfig.WAU_WingetSourceCustom) {
+        $Script:WingetSourceCustom = $Script:WAUConfig.WAU_WingetSourceCustom.Trim();
+        Write-ToLog "Selecting winget repository named '$($Script:WingetSourceCustom)'";
+    }
+}
+#endregion Winget Source Custom
+
+#region Checking execution context
+# Check if running account is system or interactive logon System(default) otherwise User
+[bool]$Script:IsSystem = [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem;
+
+# Check for current session ID (O = system without ServiceUI)
+[Int32]$Script:SessionID = [System.Diagnostics.Process]::GetCurrentProcess().SessionId;
+#endregion
+
+# Preparation to run in current context
+if ($true -eq $IsSystem) {
+
     #If log file doesn't exist, force create it
     if (!(Test-Path -Path $LogFile)) {
-        New-Item -Path $LogFile -ItemType File -Force | Out-Null
+        Write-ToLog "New log file created";
     }
+
+    # paths
+    [string]$IntuneLogsDir = "${env:ProgramData}\Microsoft\IntuneManagementExtension\Logs";
+    [string]$fp0 = [System.IO.Path]::Combine($IntuneLogsDir, 'WAU-updates.log');
+    [string]$fp1 = [System.IO.Path]::Combine($Script:WorkingDir, 'logs', 'install.log');
+    [string]$fp2 = [System.IO.Path]::Combine($IntuneLogsDir, 'WAU-install.log');
+
     # Check if Intune Management Extension Logs folder exists
-    if ((Test-Path -Path "${env:ProgramData}\Microsoft\IntuneManagementExtension\Logs" -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $IntuneLogsDir -PathType Container -ErrorAction SilentlyContinue) {
+
         # Check if symlink WAU-updates.log exists, make symlink (doesn't work under ServiceUI)
-        if (!(Test-Path -Path "${env:ProgramData}\Microsoft\IntuneManagementExtension\Logs\WAU-updates.log" -ErrorAction SilentlyContinue)) {
-            $symLink = New-Item -Path "${env:ProgramData}\Microsoft\IntuneManagementExtension\Logs\WAU-updates.log" -ItemType SymbolicLink -Value $LogFile -Force -ErrorAction SilentlyContinue
+        if (!(Test-Path -Path $fp0 -ErrorAction SilentlyContinue)) {
+            New-Item -Path $fp0 -ItemType SymbolicLink -Value $LogFile -Force -ErrorAction SilentlyContinue | Out-Null;
+            Write-ToLog "SymLink for 'update' log file created in in $($IntuneLogsDir) folder";
         }
+
         # Check if install.log and symlink WAU-install.log exists, make symlink (doesn't work under ServiceUI)
-        if ((Test-Path -Path ('{0}\logs\install.log' -f $WorkingDir) -ErrorAction SilentlyContinue) -and !(Test-Path -Path "${env:ProgramData}\Microsoft\IntuneManagementExtension\Logs\WAU-install.log" -ErrorAction SilentlyContinue)) {
-            $symLink = (New-Item -Path "${env:ProgramData}\Microsoft\IntuneManagementExtension\Logs\WAU-install.log" -ItemType SymbolicLink -Value ('{0}\logs\install.log' -f $WorkingDir) -Force -Confirm:$False -ErrorAction SilentlyContinue)
+        if ( (Test-Path -Path $fp1 -ErrorAction SilentlyContinue) -and !(Test-Path -Path $fp2 -ErrorAction SilentlyContinue) ) {
+            New-Item -Path $fp2 -ItemType SymbolicLink -Value $fp1 -Force -Confirm:$False -ErrorAction SilentlyContinue | Out-Null;
+            Write-ToLog "SymLink for 'install' log file created in $($IntuneLogsDir) folder"
+        }
+        # Check if user install.log and symlink WAU-install-username.log exists, make symlink (doesn't work under ServiceUI)
+        # Get all user directories from C:\Users (excluding default/system profiles)
+        $UserDirs = Get-ChildItem -Path "C:\Users" -Directory | Where-Object {
+            ($_ -notmatch "Default") -and ($_ -notmatch "Public") -and ($_ -notmatch "All Users") -and ($_ -notmatch "Default User")
+        }
+        foreach ($UserDir in $UserDirs) {
+            # Define user-specific log path and log file
+            $UserLogPath = "$($UserDir.FullName)\AppData\Roaming\Winget-AutoUpdate\Logs"
+            $UserLogFile = "$UserLogPath\install_$($UserDir.Name).log"
+
+            # Check if the user's log file exists
+            if (Test-Path -Path $UserLogFile -ErrorAction SilentlyContinue) {
+                # Define the Symlink target
+                $UserLogLink = "${env:ProgramData}\Microsoft\IntuneManagementExtension\Logs\WAU-user_$($UserDir.Name).log"
+
+                # Create Symlink if it doesn't already exist
+                if (!(Test-Path -Path $UserLogLink -ErrorAction SilentlyContinue)) {
+                    New-Item -Path $UserLogLink -ItemType SymbolicLink -Value $UserLogFile -Force -ErrorAction SilentlyContinue | Out-Null
+                    Write-ToLog "Created Symlink for user log: $UserLogLink -> $UserLogFile"
+                }
+            }
         }
     }
+
     #Check if running with session ID 0
     if ($SessionID -eq 0) {
         #Check if ServiceUI exists
-        $ServiceUI = Test-Path "$WorkingDir\ServiceUI.exe"
-        if ($ServiceUI) {
+        [string]$fp3 = [System.IO.Path]::Combine($Script:WorkingDir, 'ServiceUI.exe');
+        [bool]$ServiceUI = Test-Path $fp3 -PathType Leaf;
+        if ($true -eq $ServiceUI) {
             #Check if any connected user
-            $explorerprocesses = @(Get-CimInstance -Query "SELECT * FROM Win32_Process WHERE Name='explorer.exe'" -ErrorAction SilentlyContinue)
+            $explorerprocesses = @(Get-CimInstance -Query "SELECT * FROM Win32_Process WHERE Name='explorer.exe'" -ErrorAction SilentlyContinue);
             if ($explorerprocesses.Count -gt 0) {
-                if ($symLink) {
-                    $null = (New-Item "$WorkingDir\logs\symlink.txt" -Value $symLink -Force)
-                }
-                #Rerun WAU in system context with ServiceUI
-                & $WorkingDir\ServiceUI.exe -process:explorer.exe $env:windir\System32\wscript.exe \`"$WorkingDir\Invisible.vbs\`" \`"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \`"\`"$WorkingDir\winget-upgrade.ps1\`"\`"\`"
-                Exit 0
+                Write-ToLog "Rerun WAU in system context with ServiceUI";
+                Start-Process `
+                    -FilePath $fp3 `
+                    -ArgumentList "-process:explorer.exe $env:windir\System32\conhost.exe --headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File winget-upgrade.ps1" `
+                    -WorkingDirectory $WorkingDir;
+                Wait-Process "ServiceUI" -ErrorAction SilentlyContinue;
+                Exit 0;
             }
             else {
                 Write-ToLog -LogMsg "CHECK FOR APP UPDATES (System context)" -IsHeader
-                if ($symLink) {
-                    Write-ToLog "SymLink for log file created in Intune Management Extension log folder"
-                }
             }
         }
         else {
             Write-ToLog -LogMsg "CHECK FOR APP UPDATES (System context - No ServiceUI)" -IsHeader
-            if ($symLink) {
-                Write-ToLog "SymLink for log file created in Intune Management Extension log folder"
-            }
         }
     }
     else {
         Write-ToLog -LogMsg "CHECK FOR APP UPDATES (System context - Connected user)" -IsHeader
-        if (Test-Path "$WorkingDir\logs\symlink.txt") {
-            Write-ToLog "SymLink for log file created in Intune Management Extension log folder"
-            Remove-Item "$WorkingDir\logs\symlink.txt" -Force
-        }
     }
 }
 else {
     Write-ToLog -LogMsg "CHECK FOR APP UPDATES (User context)" -IsHeader
 }
 
-#Get settings and Domain/Local Policies (GPO) if activated.
-$Script:WAUConfig = Get-WAUConfig
-if ($($WAUConfig.WAU_ActivateGPOManagement -eq 1)) {
-    Write-ToLog "WAU Policies management Enabled."
-}
-
-#Log running context and more...
-if ($IsSystem) {
+#region Log running context
+if ($true -eq $IsSystem) {
 
     # Maximum number of log files to keep. Default is 3. Setting MaxLogFiles to 0 will keep all log files.
     $MaxLogFiles = $WAUConfig.WAU_MaxLogFiles
     if ($null -eq $MaxLogFiles) {
-        [int32] $MaxLogFiles = 3
+        [int32]$MaxLogFiles = 3;
     }
     else {
-        [int32] $MaxLogFiles = $MaxLogFiles
+        [int32]$MaxLogFiles = $MaxLogFiles;
     }
 
     # Maximum size of log file.
-    $MaxLogSize = $WAUConfig.WAU_MaxLogSize
+    $MaxLogSize = $WAUConfig.WAU_MaxLogSize;
     if (!$MaxLogSize) {
-        [int64] $MaxLogSize = 1048576 # in bytes, default is 1048576 = 1 MB
+        [int64]$MaxLogSize = [int64]1MB; # in bytes, default is 1 MB = 1048576
     }
     else {
-        [int64] $MaxLogSize = $MaxLogSize
+        [int64]$MaxLogSize = $MaxLogSize;
     }
 
     #LogRotation if System
-    $LogRotate = Invoke-LogRotation $LogFile $MaxLogFiles $MaxLogSize
-    if ($LogRotate -eq $False) {
-        Write-ToLog "An Exception occured during Log Rotation..."
+    [bool]$LogRotate = Invoke-LogRotation $LogFile $MaxLogFiles $MaxLogSize;
+    if ($false -eq $LogRotate) {
+        Write-ToLog "An Exception occurred during Log Rotation..."
     }
-
-    #Run post update actions if necessary if run as System
-    if (!($WAUConfig.WAU_PostUpdateActions -eq 0)) {
-        Invoke-PostUpdateActions
-    }
-    #Run Scope Machine funtion if run as System
-    Add-ScopeMachine
 }
+#endregion Log running context
 
-#Get Notif Locale function
-$LocaleDisplayName = Get-NotifLocale
-Write-ToLog "Notification Level: $($WAUConfig.WAU_NotificationLevel). Notification Language: $LocaleDisplayName" "Cyan"
+#region Run Scope Machine function if run as System
+if ($true -eq $IsSystem) {
+    Add-ScopeMachine;
+}
+#endregion Run Scope Machine function if run as System
+
+#region Get Notif Locale function
+[string]$LocaleDisplayName = Get-NotifLocale;
+Write-ToLog "Notification Level: $($WAUConfig.WAU_NotificationLevel). Notification Language: $LocaleDisplayName" "Cyan";
+#endregion
 
 #Check network connectivity
 if (Test-Network) {
+
+    #Check prerequisites
+    if ($true -eq $IsSystem) {
+        Install-Prerequisites;
+    }
+
     #Check if Winget is installed and get Winget cmd
-    $Script:Winget = Get-WingetCmd
+    [string]$Script:Winget = Get-WingetCmd;
+    Write-ToLog "Selected winget instance: $($Script:Winget)";
 
-    if ($Winget) {
+    if ($Script:Winget) {
 
-        #Log Winget installed version
-        $WingetVer = & $Winget --version
-        Write-ToLog "Winget Version: $WingetVer"
+        if ($true -eq $IsSystem) {
 
-        #Get Current Version
-        $WAUCurrentVersion = $WAUConfig.DisplayVersion
-        Write-ToLog "WAU current version: $WAUCurrentVersion"
-        if ($IsSystem) {
+            #Get Current Version
+#Sturcz Anfang anpassung damit Version angezeigt wird
+            $WAUCurrentVersion = $WAUConfig.DisplayVersion;
+#Sturcz Ende
+            Write-ToLog "WAU current version: $WAUCurrentVersion";
+
             #Check if WAU update feature is enabled or not if run as System
-            $WAUDisableAutoUpdate = $WAUConfig.WAU_DisableAutoUpdate
+            $WAUDisableAutoUpdate = $WAUConfig.WAU_DisableAutoUpdate;
             #If yes then check WAU update if run as System
             if ($WAUDisableAutoUpdate -eq 1) {
-                Write-ToLog "WAU AutoUpdate is Disabled." "Gray"
+                Write-ToLog "WAU AutoUpdate is Disabled." "Gray";
             }
             else {
-                Write-ToLog "WAU AutoUpdate is Enabled." "Green"
+                Write-ToLog "WAU AutoUpdate is Enabled." "Green";
                 #Get Available Version
-                $Script:WAUAvailableVersion = Get-WAUAvailableVersion
+                $Script:WAUAvailableVersion = Get-WAUAvailableVersion;
                 #Compare
-                if ([version]$WAUAvailableVersion.Replace("-", ".") -ne [version]$WAUCurrentVersion.Replace("-", ".")) {
+                if ((Compare-SemVer -Version1 $WAUCurrentVersion -Version2 $WAUAvailableVersion) -lt 0) {
                     #If new version is available, update it
-                    Write-ToLog "WAU Available version: $WAUAvailableVersion" "Yellow"
-                    Update-WAU
+                    Write-ToLog "WAU Available version: $WAUAvailableVersion" "Yellow";
+                    Update-WAU;
                 }
                 else {
-                    Write-ToLog "WAU is up to date." "Green"
+                    Write-ToLog "WAU is up to date." "Green";
                 }
             }
 
             #Delete previous list_/winget_error (if they exist) if run as System
-            if (Test-Path "$WorkingDir\logs\error.txt") {
-                Remove-Item "$WorkingDir\logs\error.txt" -Force
+            [string]$fp4 = [System.IO.Path]::Combine($Script:WorkingDir, 'logs', 'error.txt');
+            if (Test-Path $fp4) {
+                Remove-Item $fp4 -Force;
             }
 
             #Get External ListPath if run as System
@@ -174,7 +235,8 @@ if (Test-Network) {
                 Write-ToLog "WAU uses External Lists from: $ListPathClean"
                 if ($ListPathClean -ne "GPO") {
                     $NewList = Test-ListPath $ListPathClean $WAUConfig.WAU_UseWhiteList $WAUConfig.InstallLocation.TrimEnd(" ", "\")
-                   
+					
+					
 					#Sturcz Anfang
 					# Test if the list path is a URL
 					if ($ListPathClean -like "http*" ) {
@@ -203,9 +265,10 @@ if (Test-Network) {
 						Write-ToLog "Invalid URL format for list path: $ListPathClean" "Red"
 					$Script:ReachNoPath = $True
 					}
-					#sturcz ende		
-
-				   if ($ReachNoPath) {
+					#sturcz ende	
+									
+					
+                    if ($ReachNoPath) {
                         Write-ToLog "Couldn't reach/find/compare/copy from $ListPathClean..." "Red"
                         if ($ListPathClean -notlike "http*") {
                             if (Test-Path -Path "$ListPathClean" -PathType Leaf) {
@@ -220,7 +283,13 @@ if (Test-Network) {
                         $Script:ReachNoPath = $False
                     }
                     if ($NewList) {
-                        Write-ToLog "Newer List downloaded/copied to local path: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))" "Yellow"
+                        if ($AlwaysDownloaded) {
+                            Write-ToLog "List downloaded/copied to local path: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))" "Yellow"
+                        }
+                        else {
+                            Write-ToLog "Newer List downloaded/copied to local path: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))" "Yellow"
+                        }
+                        $Script:AlwaysDownloaded = $False
                     }
                     else {
                         if ($WAUConfig.WAU_UseWhiteList -and (Test-Path "$WorkingDir\included_apps.txt")) {
@@ -248,6 +317,7 @@ if (Test-Network) {
                 else {
                     $NewMods, $DeletedMods = Test-ModsPath $ModsPathClean $WAUConfig.InstallLocation.TrimEnd(" ", "\")
                 }
+				
 				
 				#Sturcz Anfang
 				# Get External ModPath from Github
@@ -307,7 +377,8 @@ if (Test-Network) {
 					$Script:ReachNoPath = $True
 				}
 				}
-				#Sturcz Ende
+				#Sturcz Ende				
+								
 				
                 if ($ReachNoPath) {
                     Write-ToLog "Couldn't reach/find/compare/copy from $ModsPathClean..." "Red"
@@ -381,17 +452,15 @@ if (Test-Network) {
         }
 
         #Get outdated Winget packages
-        Write-ToLog "Checking application updates on Winget Repository..." "yellow"
-        $outdated = Get-WingetOutdatedApps
+        Write-ToLog "Checking application updates on Winget Repository named '$($Script:WingetSourceCustom)' .." "yellow"
+        $outdated = Get-WingetOutdatedApps -src $Script:WingetSourceCustom;
 
-        #If something unusual happened
-        if ($outdated -like "An unusual*") {
+        #If something unusual happened or no update found
+        if ($outdated -like "No update found.*") {
             Write-ToLog "$outdated" "cyan"
-            $outdated = $False
         }
-
         #Run only if $outdated is populated!
-        if ($outdated) {
+        else {
             #Log list of app to update
             foreach ($app in $outdated) {
                 #List available updates
@@ -465,49 +534,39 @@ if (Test-Network) {
             Write-ToLog "No new update." "Green"
         }
 
+        #Test if _WAU-mods-postsys.ps1 exists: Mods for WAU (postsys) - if Network is active/any Winget is installed/running as SYSTEM _after_ SYSTEM updates
+        if ($true -eq $IsSystem) {
+            if (Test-Path "$Mods\_WAU-mods-postsys.ps1") {
+                Write-ToLog "Running Mods (postsys) for WAU..." "Yellow"
+                & "$Mods\_WAU-mods-postsys.ps1"
+            }
+        }
+
         #Check if user context is activated during system run
-        if ($IsSystem) {
+        if ($IsSystem -and ($WAUConfig.WAU_UserContext -eq 1)) {
 
-            #Run WAU in user context if feature is activated
-            if ($WAUConfig.WAU_UserContext -eq 1) {
+            $UserContextTask = Get-ScheduledTask -TaskName 'Winget-AutoUpdate-UserContext' -ErrorAction SilentlyContinue
 
-                #Create User context task if not existing
-                $UserContextTask = Get-ScheduledTask -TaskName 'Winget-AutoUpdate-UserContext' -ErrorAction SilentlyContinue
-                if (!$UserContextTask) {
-                    #Create the scheduled task in User context
-                    $taskAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$($WAUConfig.InstallLocation)\Invisible.vbs`" `"powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"`"`"$($WAUConfig.InstallLocation)\winget-upgrade.ps1`"`""
-                    $taskUserPrincipal = New-ScheduledTaskPrincipal -GroupId S-1-5-11
-                    $taskSettings = New-ScheduledTaskSettingsSet -Compatibility Win8 -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 03:00:00
-                    $task = New-ScheduledTask -Action $taskAction -Principal $taskUserPrincipal -Settings $taskSettings
-                    Register-ScheduledTask -TaskName 'Winget-AutoUpdate-UserContext' -TaskPath 'WAU' -InputObject $task -Force | Out-Null
-                    Write-ToLog "-> User Context task created."
+            $explorerprocesses = @(Get-CimInstance -Query "SELECT * FROM Win32_Process WHERE Name='explorer.exe'" -ErrorAction SilentlyContinue)
+            If ($explorerprocesses.Count -eq 0) {
+                Write-ToLog "No explorer process found / Nobody interactively logged on..."
+            }
+            Else {
+                #Get Winget system apps to escape them before running user context
+                Write-ToLog "User logged on, get a list of installed Winget apps in System context..."
+                Get-WingetSystemApps -src $Script:WingetSourceCustom;
 
-                    #Load it
-                    $UserContextTask = Get-ScheduledTask -TaskName 'Winget-AutoUpdate-UserContext' -ErrorAction SilentlyContinue
-                }
-
-                $explorerprocesses = @(Get-CimInstance -Query "SELECT * FROM Win32_Process WHERE Name='explorer.exe'" -ErrorAction SilentlyContinue)
-                If ($explorerprocesses.Count -eq 0) {
-                    Write-ToLog "No explorer process found / Nobody interactively logged on..."
-                }
-                Else {
-                    #Get Winget system apps to excape them befor running user context
-                    Write-ToLog "User logged on, get a list of installed Winget apps in System context..."
-                    Get-WingetSystemApps
-
-                    #Run user context scheduled task
-                    Write-ToLog "Starting WAU in User context..."
-                    $null = $UserContextTask | Start-ScheduledTask -ErrorAction SilentlyContinue
-                    Exit 0
-                }
+                #Run user context scheduled task
+                Write-ToLog "Starting WAU in User context..."
+                $null = $UserContextTask | Start-ScheduledTask -ErrorAction SilentlyContinue
+                Exit 0
             }
         }
     }
-	#Sturcz Anfang
+#Sturcz Anfang
 	else {
 	Write-ToLog "Critical: Winget Komponenten Fehlen" "red"
    	Install-Prerequisites
-	Update-WinGet
 	$TestWinget = Get-WingetCmd
 	if ($Winget) {
 

@@ -4,8 +4,6 @@ Sturcz Anpassung
 Links mit Romanitho austauschen gegen user1722
 //github.com/user1722/
 
-
-
 .SYNOPSIS
 Uninstall Winget-AutoUpdate
 
