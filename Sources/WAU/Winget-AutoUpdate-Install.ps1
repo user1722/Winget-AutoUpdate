@@ -4,8 +4,6 @@ Sturcz Anpassung
 Links mit Romanitho austauschen gegen user1722
 //github.com/user1722/
 
-
-
 .SYNOPSIS
 Configure Winget to daily update installed apps.
 
@@ -128,10 +126,11 @@ param(
 #Include external Functions
 . "$PSScriptRoot\Winget-AutoUpdate\functions\Install-Prerequisites.ps1"
 . "$PSScriptRoot\Winget-AutoUpdate\functions\Invoke-DirProtect.ps1"
-. "$PSScriptRoot\Winget-AutoUpdate\functions\Update-WinGet.ps1"
+#. "$PSScriptRoot\Winget-AutoUpdate\functions\Update-WinGet.ps1"
 . "$PSScriptRoot\Winget-AutoUpdate\functions\Update-StoreApps.ps1"
 . "$PSScriptRoot\Winget-AutoUpdate\functions\Add-Shortcut.ps1"
 . "$PSScriptRoot\Winget-AutoUpdate\functions\Write-ToLog.ps1"
+. "$PSScriptRoot\Winget-AutoUpdate\functions\Compare-SemVer.ps1"
 
 
 function Install-WingetAutoUpdate {
@@ -270,12 +269,7 @@ function Install-WingetAutoUpdate {
         New-ItemProperty $regPath -Name Publisher -Value "Romanitho" -Force | Out-Null
         New-ItemProperty $regPath -Name URLInfoAbout -Value "https://github.com/user1722/Winget-AutoUpdate" -Force | Out-Null
         New-ItemProperty $regPath -Name WAU_NotificationLevel -Value $NotificationLevel -Force | Out-Null
-        if ($WAUVersion -match "-") {
-            New-ItemProperty $regPath -Name WAU_UpdatePrerelease -Value 1 -PropertyType DWord -Force | Out-Null
-        }
-        else {
-            New-ItemProperty $regPath -Name WAU_UpdatePrerelease -Value 0 -PropertyType DWord -Force | Out-Null
-        }
+        New-ItemProperty $regPath -Name WAU_UpdatePrerelease -Value 0 -PropertyType DWord -Force | Out-Null
         New-ItemProperty $regPath -Name WAU_PostUpdateActions -Value 0 -PropertyType DWord -Force | Out-Null
         New-ItemProperty $regPath -Name WAU_MaxLogFiles -Value $MaxLogFiles -PropertyType DWord -Force | Out-Null
         New-ItemProperty $regPath -Name WAU_MaxLogSize -Value $MaxLogSize -PropertyType DWord -Force | Out-Null
@@ -504,12 +498,13 @@ $Script:regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Win
 
 if (!$Uninstall) {
     Write-ToLog "  INSTALLING WAU" -LogColor "Cyan" -IsHeader
-    Install-Prerequisites
-    $UpdateWinget = Update-Winget
-    if ($UpdateWinget -ne "fail") {
+    
+    $UpdateWinget = Install-Prerequisites
+    if ($UpdateWinget) {
         Install-WingetAutoUpdate
     }
     else {
+		Write-ToLog "Prerequisites returned false"
         Write-ToLog "Winget is mandatory to execute WAU." "Red"
     }
 }

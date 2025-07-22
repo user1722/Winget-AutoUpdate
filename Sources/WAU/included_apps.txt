@@ -350,6 +350,7 @@ Mozilla.Firefox.ESR.xh
 Mozilla.Firefox.ESR.zh-CN
 Mozilla.Firefox.ESR.zh-TW
 Mozilla.Firefox.DeveloperEdition
+MySolutionsNORDIC.NSClient++
 Notepad++.Notepad++
 Nvidia.PhysX
 OBSProject.OBSStudio
@@ -366,6 +367,7 @@ Tencent.WeChat
 Tencent.WeChat.Universal
 TigerVNCproject.TigerVNC
 TigerVNCproject.TigerVNC.Nightly
+uvncbvba.UltraVNC
 VideoLAN.VLC
 vim.vim
 vim.vim.nightly
