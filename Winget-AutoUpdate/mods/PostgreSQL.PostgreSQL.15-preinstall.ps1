@@ -15,7 +15,7 @@ if ($zuluProzesse) {
     }
 
     # Rückgabecode für WAU/Winget
-    exit 1
+    exit 101
 }
 else {
     Write-Host "Keine blockierenden Zulu/REMIRA Prozesse gefunden. Fortsetzung moeglich. "
