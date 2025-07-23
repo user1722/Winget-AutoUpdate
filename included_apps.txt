@@ -365,7 +365,6 @@ TeamViewer.TeamViewer
 TeamViewer.TeamViewer.Host
 Tencent.WeChat
 Tencent.WeChat.Universal
-TigerVNC.TigerVNC
 TigerVNCproject.TigerVNC
 TigerVNCproject.TigerVNC.Nightly
 uvncbvba.UltraVNC
