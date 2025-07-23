@@ -1,3 +1,4 @@
+#Sturcz Anpassung an Ausnahmen fuer Install Mods
 <#
 .SYNOPSIS
 Install apps with Winget through Intune or SCCM.
@@ -5,7 +6,7 @@ Can be used standalone.
 
 .DESCRIPTION
 Allow to run Winget in System Context to install your apps.
-https://github.com/Romanitho/Winget-Install
+https://github.com/user1722/Winget-Install
 
 .PARAMETER AppIDs
 Forward Winget App ID to install. For multiple apps, separate with ",". Case sensitive.
@@ -20,7 +21,7 @@ To allow upgrade app if present. Works with AppIDs
 Used to specify logpath. Default is same folder as Winget-Autoupdate project
 
 .PARAMETER WAUWhiteList
-Adds the app to the Winget-AutoUpdate White List. More info: https://github.com/Romanitho/Winget-AutoUpdate
+Adds the app to the Winget-AutoUpdate White List. More info: https://github.com/user1722/Winget-AutoUpdate
 If '-Uninstall' is used, it removes the app from WAU White List.
 
 .EXAMPLE
@@ -150,7 +151,13 @@ function Test-ModsUninstall ($AppID) {
 
 #Install function
 function Install-App ($AppID, $AppArgs) {
-    $IsInstalled = Confirm-Installation $AppID
+	# Versionsnummer aus den AppArgs extrahieren (wenn vorhanden)
+    $AppVersion = $null
+    if ($AppArgs -match "(?<=-v\s*)[\d\.]+") {
+        $AppVersion = $Matches[0]
+		write-host "extrahierte AppVersion $AppVersion"
+    }
+    $IsInstalled = Confirm-Installation -AppName $AppID -AppVer $AppVersion
     if (!($IsInstalled) -or $AllowUpgrade ) {
         #Check if mods exist (or already exist) for preinstall/install/installedonce/installed
         $ModsPreInstall, $ModsInstall, $ModsInstalledOnce, $ModsInstalled = Test-ModsInstall $($AppID)
@@ -158,8 +165,34 @@ function Install-App ($AppID, $AppArgs) {
         #If PreInstall script exist
         if ($ModsPreInstall) {
             Write-ToLog "-> Modifications for $AppID before install are being applied..." "Yellow"
-            & "$ModsPreInstall"
-        }
+		try {
+			& "$ModsPreInstall"
+			if ($LASTEXITCODE -ne 0) {
+				
+				if ($LASTEXITCODE -eq 101) {
+				throw "PreInstall script exited with code $LASTEXITCODE a important Program is still running"	
+				}
+				elseif ($LASTEXITCODE -eq 450) {
+				throw "PreInstall script exited with code $LASTEXITCODE a reboot is still required"	
+				}
+				else {
+				throw "PreInstall script exited with code $LASTEXITCODE"
+				}							
+			}
+		}
+		catch {
+			Write-ToLog "PreInstall for $($app.Id) failed: $_" "Red"
+
+			# Benachrichtigung über Fehler senden
+			$Title = $NotifLocale.local.outputs.output[4].title -f $($app.Name)
+			$Message = "Das Preinstall-Modul für $($app.Name) wurde mit abgebrochen: $_"
+			$MessageType = "error"
+			$Balise = $($app.Name)
+			Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Balise $Balise -Button1Action $ReleaseNoteURL -Button1Text $Button1Text
+
+			return  # Bricht die Funktion vollständig ab
+		}
+	}
 
         #Install App
         Write-ToLog "-> Installing $AppID..." "Yellow"
@@ -221,8 +254,34 @@ function Uninstall-App ($AppID, $AppArgs) {
         #If PreUninstall script exist
         if ($ModsPreUninstall) {
             Write-ToLog "-> Modifications for $AppID before uninstall are being applied..." "Yellow"
-            & "$ModsPreUninstall"
-        }
+		try {
+			& "$ModsPreUninstall"
+			if ($LASTEXITCODE -ne 0) {
+				
+				if ($LASTEXITCODE -eq 101) {
+				throw "PreUninstall script exited with code $LASTEXITCODE a important Program is still running"	
+				}
+				elseif ($LASTEXITCODE -eq 450) {
+				throw "PreUninstall script exited with code $LASTEXITCODE a reboot is still required"	
+				}
+				else {
+				throw "PreUninstall script exited with code $LASTEXITCODE"
+				}							
+			}
+		}
+		catch {
+			Write-ToLog "PreUninstall for $($app.Id) failed: $_" "Red"
+
+			# Benachrichtigung über Fehler senden
+			$Title = $NotifLocale.local.outputs.output[4].title -f $($app.Name)
+			$Message = "Das PreUninstall-Modul für $($app.Name) wurde mit abgebrochen: $_"
+			$MessageType = "error"
+			$Balise = $($app.Name)
+			Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Balise $Balise -Button1Action $ReleaseNoteURL -Button1Text $Button1Text
+
+			return  # Bricht die Funktion vollständig ab
+		}
+	}
 
         #Uninstall App
         Write-ToLog "-> Uninstalling $AppID..." "Yellow"
@@ -319,7 +378,7 @@ $CurrentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Pri
 $Script:IsElevated = $CurrentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 #Get WAU Installed location
-$WAURegKey = "HKLM:\SOFTWARE\Romanitho\Winget-AutoUpdate\"
+$WAURegKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Winget-AutoUpdate"
 $Script:WAUInstallLocation = Get-ItemProperty $WAURegKey -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InstallLocation
 $Script:WAUModsLocation = Join-Path -Path $WAUInstallLocation -ChildPath "mods"
 
