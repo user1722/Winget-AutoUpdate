@@ -22,7 +22,7 @@ if (Test-Path $greenshotPath) {
     $userProfile = Join-Path -Path "C:\Users" -ChildPath $username
 
     # Pfade manuell zusammensetzen
-    $startupFolder = Join-Path -Path $userProfile -ChildPath "AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
+    #$startupFolder = Join-Path -Path $userProfile -ChildPath "AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
     $programsFolder = Join-Path -Path $userProfile -ChildPath "AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
     # Debug-Ausgaben
@@ -31,7 +31,7 @@ if (Test-Path $greenshotPath) {
     Write-Output "Startup-Verzeichnis: $startupFolder"
     Write-Output "Startmenü-Verzeichnis: $programsFolder"
 
-    # 1. Autostart-Link (Benutzer)
+    <# 1. Autostart-Link (Benutzer)
     $autostartPath = Join-Path -Path $startupFolder -ChildPath "Greenshot.lnk"
     if (-not (Test-Path $autostartPath)) {
         try {
@@ -45,7 +45,7 @@ if (Test-Path $greenshotPath) {
             Write-Output "Fehler beim Erstellen der Autostart-Verknüpfung: $_"
         }
     }
-	
+	#>
     # 2. Startmenü-Link (Benutzer)
     $startmenuPath = Join-Path -Path $programsFolder -ChildPath "Greenshot.lnk"
     if (-not (Test-Path $startmenuPath)) {
