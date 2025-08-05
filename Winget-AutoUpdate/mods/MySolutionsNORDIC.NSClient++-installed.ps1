@@ -37,6 +37,9 @@ thread pool = 10
 
 [/settings/NRPE/server]
 port = 5666
+tls version = tlsv1.2+
+insecure = false
+verify mode = peer-cert
 
 [/settings/web/server]
 port = 5249
@@ -51,11 +54,6 @@ CheckSystem = 1
 NSClientServer = enabled
 WEBServer = disabled
 NRPEServer = disabled
-
-[/settings/NRPE/server]
-tls version = tlsv1.2+
-insecure = false
-verify mode = peer-cert
 "@
 
 # Logging-Funktion
@@ -138,3 +136,4 @@ if ($global:nsclientFound) {
 } else {
     exit 0
 }
+
