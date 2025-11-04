@@ -35,7 +35,7 @@ Dell.CommandUpdate
 Dell.CommandUpdate.Universal
 Dell.DisplayManager
 Dell.PeripheralManager
-DominikReichl.KeePass
+#DominikReichl.KeePass
 geeksoftwareGmbH.PDF24Creator
 Git.Git
 GitHub.GitHubDesktop
@@ -378,3 +378,4 @@ WiresharkFoundation.Wireshark
 Zoom.Zoom
 
 Zoom.Zoom.EXE
+
