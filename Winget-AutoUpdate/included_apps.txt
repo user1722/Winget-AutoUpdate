@@ -34,7 +34,10 @@ Dell.CommandConfigure
 Dell.CommandUpdate
 Dell.CommandUpdate.Universal
 Dell.DisplayManager
+Dell.DisplayAndPeripheralManager
 Dell.PeripheralManager
+Dell.Optimizer
+Dell.SystemUpdate
 DominikReichl.KeePass
 geeksoftwareGmbH.PDF24Creator
 Git.Git
@@ -362,7 +365,6 @@ Oracle.JDK.19
 ownCloud.ownCloudDesktop
 pdfforge.PDFCreator
 PuTTY.PuTTY
-RaspberryPiFoundation.RaspberryPiImager
 Softerra.LDAPBrowser
 TeamViewer.TeamViewer
 TeamViewer.TeamViewer.Host
