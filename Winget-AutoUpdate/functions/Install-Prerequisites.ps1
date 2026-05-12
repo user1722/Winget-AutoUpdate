@@ -7,13 +7,20 @@ function Install-Prerequisites {
         Write-ToLog "Checking prerequisites..." "Yellow"
 
         #Check if Visual C++ 2022 is installed
-        $Visual2022 = "Microsoft Visual C++ 2015-2022 Redistributable*"
-        $VisualMinVer = "14.40.0.0"
-        $path = Get-Item HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object { $_.GetValue("DisplayName") -like $Visual2022 -and $_.GetValue("DisplayVersion") -gt $VisualMinVer }
+        $Visual2022 = "Microsoft Visual C++ 20*"
+        $VisualMinVer = "14.50.0.0"
+        $path = Get-Item HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {
+            $displayName    = $_.GetValue("DisplayName")
+            $displayVersion = $_.GetValue("DisplayVersion")
+            if (-not ($displayName -like $Visual2022) -or -not $displayVersion) { return $false }
+            try   { [version]$displayVersion -ge [version]$VisualMinVer }
+            catch { $false }
+        }
+ 
         if (!($path)) {
             try {
                 Write-ToLog "MS Visual C++ 2015-2022 is not installed" "Red"
-
+ 
                 #Get proc architecture
                 if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
                     $OSArch = "arm64"
@@ -24,7 +31,7 @@ function Install-Prerequisites {
                 else {
                     $OSArch = "x86"
                 }
-
+ 
                 #Download and install
                 $SourceURL = "https://aka.ms/vs/17/release/VC_redist.$OSArch.exe"
                 $Installer = "$env:TEMP\VC_redist.$OSArch.exe"
@@ -41,7 +48,12 @@ function Install-Prerequisites {
                 Remove-Item $Installer -ErrorAction Ignore
             }
         }
-
+        else {
+            $foundName    = ($path | Select-Object -First 1).GetValue("DisplayName")
+            $foundVersion = ($path | Select-Object -First 1).GetValue("DisplayVersion")
+            Write-ToLog "-> MS Visual C++ already installed: $foundName ($foundVersion)" "Green"
+        }
+ 
         #Check if Microsoft.VCLibs.140.00.UWPDesktop is installed
         if (!(Get-AppxPackage -Name 'Microsoft.VCLibs.140.00.UWPDesktop' -AllUsers)) {
             try {
@@ -60,10 +72,10 @@ function Install-Prerequisites {
                 Write-ToLog "-> Failed to install Microsoft.VCLibs.140.00.UWPDesktop..." "Red"
             }
             finally {
-                Remove-Item -Path $VCLibsFile -Force
+                Remove-Item -Path $VCLibsFile -Force -ErrorAction Ignore
             }
         }
-
+ 
         #Check if Microsoft.UI.Xaml.2.8 is installed
         if (!(Get-AppxPackage -Name 'Microsoft.UI.Xaml.2.8' -AllUsers)) {
             try {
@@ -82,33 +94,44 @@ function Install-Prerequisites {
                 Write-ToLog "-> Failed to install Microsoft.UI.Xaml.2.8..." "Red"
             }
             finally {
-                Remove-Item -Path $UIXamlFile -Force
+                Remove-Item -Path $UIXamlFile -Force -ErrorAction Ignore
             }
         }
-
+ 
         #Check if Winget is installed (and up to date)
         try {
             #Get latest WinGet info
             $WinGeturl = 'https://api.github.com/repos/microsoft/winget-cli/releases/latest'
-            $WinGetAvailableVersion = ((Invoke-WebRequest $WinGeturl -UseBasicParsing | ConvertFrom-Json)[0].tag_name).TrimStart("v")
+            $resp = Invoke-WebRequest $WinGeturl -UseBasicParsing -Headers @{ "User-Agent" = "WAU-Updater" }
+            $WinGetAvailableVersion = ((ConvertFrom-Json $resp.Content).tag_name).TrimStart("v")
         }
         catch {
-            #If fail set version to the latest version as of 2025-03-14
-            $WinGetAvailableVersion = "1.11.400"
+            #If fail set version to the latest known version as of 2026-02-26
+            $WinGetAvailableVersion = "1.28.190"
         }
+ 
         try {
             #Get Admin Context Winget Location
             $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
             #If multiple versions, pick most recent one
             $WingetCmd = $WingetInfo[-1].FileName
             #Get current Winget Version
-            $WingetInstalledVersion = (& $WingetCmd -v).Trim().TrimStart("v")
+            $raw = (& $WingetCmd -v 2>&1 | Out-String).Trim()
+            # Extract first X.Y.Z(.W) from output (handles "Unexpected error..." prefix)
+            if ($raw -match '(?<!\d)v?(\d+\.\d+\.\d+(?:\.\d+)?)\b') {
+                $WinGetInstalledVersion = $Matches[1]
+            }
+            else {
+                throw "Could not parse winget version from output: $raw"
+            }
         }
         catch {
             Write-ToLog "WinGet is not installed" "Red"
             $WinGetInstalledVersion = "0.0.0"
         }
+ 
         Write-ToLog "WinGet installed version: $WinGetInstalledVersion | WinGet available version: $WinGetAvailableVersion"
+ 
         #Check if the currently installed version is less than the available version
         if ((Compare-SemVer -Version1 $WinGetInstalledVersion -Version2 $WinGetAvailableVersion) -lt 0) {
             #Install WinGet MSIXBundle in SYSTEM context
@@ -118,44 +141,45 @@ function Install-Prerequisites {
                 $WinGetURL = "https://github.com/microsoft/winget-cli/releases/download/v$WinGetAvailableVersion/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
                 $WingetInstaller = "$env:TEMP\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
                 Invoke-WebRequest -Uri $WinGetURL -OutFile $WingetInstaller -UseBasicParsing
-
+ 
                 #Install
                 Write-ToLog "-> Installing WinGet MSIXBundle for App Installer..."
                 Add-AppxProvisionedPackage -Online -PackagePath $WingetInstaller -SkipLicense | Out-Null
-                Write-ToLog "-> WinGet MSIXBundle (v$WinGetAvailableVersion) for App Installer installed successfully!" "green"
+                Write-ToLog "-> WinGet MSIXBundle (v$WinGetAvailableVersion) for App Installer installed successfully!" "Green"
             }
             catch {
-                Write-ToLog "-> Failed to install WinGet MSIXBundle for App Installer..." "red"
+                Write-ToLog "-> Failed to install WinGet MSIXBundle for App Installer..." "Red"
                 #Force Store Apps to update
                 Update-StoreApps
             }
-			try {
-			    #Reset WinGet Sources
+            try {
+                #Reset WinGet Sources
                 $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
                 #If multiple versions, pick most recent one
                 $WingetCmd = $WingetInfo[-1].FileName
                 & $WingetCmd source reset --force
-                Write-ToLog "-> WinGet sources reset." "green"
-			}
-	      catch {
-                Write-ToLog "-> Failed to Reset Source" "red"
+                Write-ToLog "-> WinGet sources reset." "Green"
+            }
+            catch {
+                Write-ToLog "-> Failed to Reset Source" "Red"
                 #Force Store Apps to update
                 Update-StoreApps
-		  }
+            }
             #Remove WinGet MSIXBundle
             Remove-Item -Path $WingetInstaller -Force -ErrorAction SilentlyContinue
         }
         else {
             Write-ToLog "-> WinGet is up to date: v$WinGetInstalledVersion" "Green"
         }
+ 
         Write-ToLog "Prerequisites checked. OK return true" "Green"
-		return $true
-
+        return $true
+ 
     }
     catch {
         Write-ToLog "Prerequisites check failed return false:" "Red"
         Write-ToLog $_.Exception.Message "Red"
         Write-ToLog $_.ScriptStackTrace "Red"
-		return $false
+        return $false
     }
 }

@@ -15,7 +15,7 @@ function Update-WAU {
     $Message = $NotifLocale.local.outputs.output[2].message -f $WAUCurrentVersion, $WAUAvailableVersion
     $MessageType = "info"
     Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Button1Action $OnClickAction -Button1Text $Button1Text
-
+	
     #Run WAU update
     try {
         Write-ToLog "Downloading the GitHub Repository version $WAUAvailableVersion" "Cyan"
@@ -38,10 +38,10 @@ function Update-WAU {
         $Message = $NotifLocale.local.outputs.output[3].message -f $WAUAvailableVersion
         $MessageType = "success"
         Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Button1Action $OnClickAction -Button1Text $Button1Text
-
+	
         #Remove temp folder and content
         Remove-Item $MsiFolder -Recurse -Force
-
+		
         exit 0
     }
 
@@ -98,7 +98,7 @@ function Update-WAU {
             $Message = $NotifLocale.local.outputs.output[3].message -f $WAUAvailableVersion
             $MessageType = "success"
             Start-NotifTask -Title $Title -Message $Message -MessageType $MessageType -Button1Action $OnClickAction -Button1Text $Button1Text
-
+			
             #Rerun with newer version
             Write-ToLog "Re-run WAU"
             Start-Process powershell -ArgumentList "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command `"$WorkingDir\winget-upgrade.ps1`""
