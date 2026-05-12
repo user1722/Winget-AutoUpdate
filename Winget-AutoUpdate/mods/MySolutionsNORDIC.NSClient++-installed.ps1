@@ -28,7 +28,7 @@ allowed hosts = 10.254.1.8, 10.254.1.7
 password = 
 
 [/settings/NSClient/server]
-ssl = false
+ssl = true
 performance data = true
 port = 5248
 timeout = 30
@@ -37,23 +37,26 @@ thread pool = 10
 
 [/settings/NRPE/server]
 port = 5666
+allowed hosts = 10.254.1.7,10.254.1.8
 tls version = tlsv1.2+
 insecure = false
-verify mode = peer-cert
+verify mode = none
+allow arguments = true
+allow nasty characters = true
 
 [/settings/web/server]
 port = 5249
 
 [/modules]
-CheckExternalScripts = 1
-CheckHelpers = 1
-CheckEventLog = 1
-CheckNSCP = 1
-CheckDisk = 1
-CheckSystem = 1
+CheckExternalScripts = enabled
+CheckHelpers = enabled
+CheckEventLog = enabled
+CheckNSCP = enabled
+CheckDisk = enabled
+CheckSystem = enabled
 NSClientServer = enabled
 WEBServer = disabled
-NRPEServer = disabled
+NRPEServer = enabled
 "@
 
 # Logging-Funktion
