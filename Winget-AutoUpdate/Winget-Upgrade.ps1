@@ -216,7 +216,8 @@ if (Test-Network) {
                 if ((Compare-SemVer -Version1 $WAUCurrentVersion -Version2 $WAUAvailableVersion) -lt 0) {
                     #If new version is available, update it
                     Write-ToLog "WAU Available version: $WAUAvailableVersion" "Yellow";
-                    Update-WAU;
+					Update-WAU;
+					
                 }
                 else {
                     Write-ToLog "WAU is up to date." "Green";
@@ -319,63 +320,78 @@ if (Test-Network) {
                 }
 				
 				
-				#Sturcz Anfang
-				# Get External ModPath from Github
-				if ($WAUConfig.WAU_ModsPath -like "*git*") {
-					Write-ToLog "Using Git as Mod Path"
-					$URLtoTestModMS = $WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/")
-					try {
-						$URLcontentIncludedModMS = (Invoke-WebRequest -Uri $URLtoTestModMS -UseBasicParsing).Content
-
-				# Extrahiere Dateinamen aus dem URL-Inhalt
-				
-				# Array zum Sammeln der fehlgeschlagenen Links
-				$FailedLinks = @()
-				
-				$file_data = ($URLcontentIncludedModMS -split '"').Trim() | 
-				Where-Object { $_ -match "install.ps1|preinstall.ps1|installed.ps1|override.txt|preuninstall.ps1|uninstall.ps1|uninstalled.ps1|upgrade.ps1" -and $_ -notmatch '/' -and $_ -notmatch ", \(File\)" } | 
-				Select-Object -Unique
-				
-				Write-ToLog "Mods Download:"
-				foreach ($line in $file_data) {
-					Write-ToLog "$line"
-					$Linedata = $line
-					#$URLtoTestMod = "https://raw.githubusercontent.com/user1722/Winget-AutoUpdate/main/Winget-AutoUpdate/mods/$Linedata"
-					# Replace the base URL and ensure it’s correctly formatted for raw.githubusercontent.com
-					$ModsPathClean = $ModsPathClean -replace "https://github.com", "https://raw.githubusercontent.com"
-					# Remove '/tree/' from the URL if it exists
-					$ModsPathClean = $ModsPathClean -replace "/tree/", "/"
-					# Construct the final URL
-					$URLtoTestMod = "$ModsPathClean/$Linedata"
-					try {
-					$URLcontentIncludedMod = (Invoke-WebRequest -Uri $URLtoTestMod -UseBasicParsing).Content
-					[System.IO.File]::WriteAllText("$($WAUConfig.InstallLocation.TrimEnd(" ", "\"))\mods\$Linedata", $URLcontentIncludedMod)
-					} catch {
-						# Fügen Sie den fehlgeschlagenen Link zum Array hinzu
-						$FailedLinks += $URLtoTestMod
+#Sturcz Anfang — GitHub API statt HTML-Parsing
+				if ($WAUConfig.WAU_ModsPath -like "*github.com*") {
+					Write-ToLog "Using GitHub API for Mods download"
+ 
+					# Aus der konfigurierten URL die API-URL ableiten
+					# Eingabe:  https://github.com/user1722/Winget-AutoUpdate/tree/main/Winget-AutoUpdate/mods
+					# Ausgabe:  https://api.github.com/repos/user1722/Winget-AutoUpdate/contents/Winget-AutoUpdate/mods?ref=main
+					$ModsPathClean = $WAUConfig.WAU_ModsPath.TrimEnd(" ", "\", "/")
+ 
+					if ($ModsPathClean -match "github\.com/([^/]+)/([^/]+)/tree/([^/]+)/(.+)") {
+						$ApiUrl = "https://api.github.com/repos/$($Matches[1])/$($Matches[2])/contents/$($Matches[4])?ref=$($Matches[3])"
 					}
-				}
-				# Wenn alle Links fehlgeschlagen sind, lösen Sie den Fehler aus
-				if ($FailedLinks.Count -eq $file_data.Count) {
-				Write-ToLog "Error downloading all mods. Failed to download mods from the following links:" "Red"
-				foreach ($failedLink in $FailedLinks) {
-					Write-ToLog $failedLink "Red"
-				}
-				}
-				else{
-					Write-ToLog "Newer Mod downloaded/copied to local path from GitHub: $($WAUConfig.InstallLocation.TrimEnd(" ", "\"))/mods" "Yellow"
-					    Write-ToLog "Following Links Failed"	
-						foreach ($failedLink in $FailedLinks) {
-						Write-ToLog $failedLink "Red"
+					else {
+						Write-ToLog "Could not parse GitHub URL into API URL: $ModsPathClean" "Red"
+						$Script:ReachNoPath = $True
+						$ApiUrl = $null
+					}
+ 
+					if ($ApiUrl) {
+						try {
+							Write-ToLog "Querying GitHub API: $ApiUrl"
+							$ApiResponse = Invoke-RestMethod -Uri $ApiUrl -UseBasicParsing -Headers @{ "User-Agent" = "WAU-Updater" }
+ 
+							# Erlaubte Muster:
+							# 1. Normale Mods:  AppID-hook.ps1 / AppID-hook.txt
+							# 2. WAU-Globalhooks: _WAU-mods.ps1, _WAU-mods-postsys.ps1, etc.
+							$AllowedPattern = "^(?:_WAU-[a-zA-Z0-9_-]+\.ps1|[a-zA-Z0-9._+\-]+-(?:install|preinstall|installed|override|preuninstall|uninstall|uninstalled|upgrade)\.(?:ps1|txt))$"
+ 
+							$file_data = $ApiResponse | Where-Object {
+								$_.type -eq "file" -and $_.name -match $AllowedPattern
+							}
+ 
+							$FailedLinks = @()
+							Write-ToLog "Mods to download: $($file_data.Count)"
+ 
+							foreach ($file in $file_data) {
+								Write-ToLog "Downloading: $($file.name)"
+								$DestPath = "$($WAUConfig.InstallLocation.TrimEnd(' ', '\'))\mods\$($file.name)"
+								try {
+									Invoke-WebRequest -Uri $file.download_url -OutFile $DestPath -UseBasicParsing
+								}
+								catch {
+									Write-ToLog "Failed to download $($file.name): $_" "Red"
+									$FailedLinks += $file.download_url
+								}
+							}
+ 
+							if ($FailedLinks.Count -eq $file_data.Count -and $file_data.Count -gt 0) {
+								Write-ToLog "Error: All mod downloads failed." "Red"
+								$Script:ReachNoPath = $True
+							}
+							else {
+								Write-ToLog "Mods downloaded to: $($WAUConfig.InstallLocation.TrimEnd(' ', '\'))\mods" "Yellow"
+								if ($FailedLinks.Count -gt 0) {
+									Write-ToLog "Failed downloads:" "Red"
+									$FailedLinks | ForEach-Object { Write-ToLog $_ "Red" }
+								}
+								$Script:ReachNoPath = $False
+							}
 						}
-					$Script:ReachNoPath = $False
-				}
-					
-				}
-				catch {
-					Write-ToLog "Error downloading mods from $URLtoTestModMS : $_" "Red"
-					$Script:ReachNoPath = $True
-				}
+						catch {
+							# 429 = GitHub Rate Limit erreicht -> vorhandene Mods behalten, kein Fehler
+							if ($_.Exception.Response -and [int]$_.Exception.Response.StatusCode -eq 429) {
+								Write-ToLog "GitHub API rate limited (429) - keeping existing mods for this run" "Yellow"
+								$Script:ReachNoPath = $False
+							}
+							else {
+								Write-ToLog "GitHub API error for $ApiUrl : $_" "Red"
+								$Script:ReachNoPath = $True
+							}
+						}
+					}
 				}
 				#Sturcz Ende				
 								
