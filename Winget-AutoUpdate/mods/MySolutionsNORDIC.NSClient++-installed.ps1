@@ -28,7 +28,7 @@ allowed hosts = 10.254.1.8, 10.254.1.7
 password = 
 
 [/settings/NSClient/server]
-use ssl = false
+ssl = false
 performance data = true
 port = 5248
 timeout = 30
