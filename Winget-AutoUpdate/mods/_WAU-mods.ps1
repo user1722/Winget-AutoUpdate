@@ -48,7 +48,7 @@ allow nasty characters = true
 port = 5249
 
 [/modules]
-CheckExternalScripts = enabled
+CheckExternalScripts = disabled
 CheckHelpers = enabled
 CheckEventLog = enabled
 CheckNSCP = enabled
