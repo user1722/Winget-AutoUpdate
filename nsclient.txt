@@ -1,0 +1,41 @@
+# If you want to fill this file with all available options run the following command:
+#   nscp settings --generate --add-defaults --load-all
+# If you want to activate a module and bring in all its options use:
+#   nscp settings --activate-module <MODULE NAME> --add-defaults
+# For details run: nscp settings --help
+
+; in flight - TODO
+[/settings/default]
+allowed hosts = 10.254.1.8, 10.254.1.7
+password = 
+
+[/settings/NSClient/server]
+ssl = true
+performance data = true
+port = 5248
+timeout = 30
+verify mode = none
+thread pool = 10
+
+[/settings/NRPE/server]
+port = 5666
+allowed hosts = 10.254.1.7,10.254.1.8
+tls version = tlsv1.2+
+insecure = false
+verify mode = none
+allow arguments = true
+allow nasty characters = true
+
+[/settings/web/server]
+port = 5249
+
+[/modules]
+CheckExternalScripts = enabled
+CheckHelpers = enabled
+CheckEventLog = enabled
+CheckNSCP = enabled
+CheckDisk = enabled
+CheckSystem = enabled
+NSClientServer = enabled
+WEBServer = disabled
+NRPEServer = enabled
