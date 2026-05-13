@@ -54,7 +54,7 @@ CheckEventLog = enabled
 CheckNSCP = enabled
 CheckDisk = enabled
 CheckSystem = enabled
-NSClientServer = enabled
+NSClientServer = disabled
 WEBServer = disabled
 NRPEServer = enabled
 "@
