@@ -1,3 +1,4 @@
+3Dconnexion.3DxWare.10
 7zip.7zip
 AdoptOpenJDK.OpenJDK.11
 Adobe.Acrobat.Reader.32-bit
@@ -24,6 +25,7 @@ Apple.iTunes
 ArtifexSoftware.GhostScript
 Audacity.Audacity
 Azul.Zulu.8.JDK
+Bambulab.Bambustudio
 BlueJeans.BlueJeans
 BlenderFoundation.Blender
 Cisco.Webex
@@ -39,6 +41,9 @@ Dell.PeripheralManager
 Dell.Optimizer
 Dell.SystemUpdate
 DominikReichl.KeePass
+EPSON.EpsonScan2
+EPSON.EventManager
+EPSON.ScanSmart
 geeksoftwareGmbH.PDF24Creator
 Git.Git
 GitHub.GitHubDesktop
@@ -46,6 +51,7 @@ Google.Chrome
 Google.Chrome.exe
 Greenshot.Greenshot
 GNE.DualMonitorTools
+HP.ConnectionOptimizer
 IrfanSkiljan.IrfanView
 Iterate.Cyberduck
 JAMSoftware.TreeSize
@@ -67,6 +73,8 @@ Microsoft.DotNet.AspNetCore.6
 Microsoft.DotNet.AspNetCore.7
 Microsoft.DotNet.AspNetCore.8
 Microsoft.DotNet.AspNetCore.9
+Microsoft.DotNet.AspNetCore.10
+Microsoft.DotNet.AspNetCore.11
 Microsoft.DotNet.AspNetCore.Preview
 Microsoft.DotNet.DesktopRuntime.3_1
 Microsoft.DotNet.DesktopRuntime.5
@@ -74,12 +82,16 @@ Microsoft.DotNet.DesktopRuntime.6
 Microsoft.DotNet.DesktopRuntime.7
 Microsoft.DotNet.DesktopRuntime.8
 Microsoft.DotNet.DesktopRuntime.9
+Microsoft.DotNet.DesktopRuntime.10
+Microsoft.DotNet.DesktopRuntime.11
 Microsoft.DotNet.DesktopRuntime.Preview
 Microsoft.DotNet.HostingBundle.3_1
 Microsoft.DotNet.HostingBundle.6
 Microsoft.DotNet.HostingBundle.7
 Microsoft.DotNet.HostingBundle.8
 Microsoft.DotNet.HostingBundle.9
+Microsoft.DotNet.HostingBundle.10
+Microsoft.DotNet.HostingBundle.11
 Microsoft.DotNet.HostingBundle.Preview
 Microsoft.DotNet.Runtime.3_1
 Microsoft.DotNet.Runtime.5
@@ -87,6 +99,8 @@ Microsoft.DotNet.Runtime.6
 Microsoft.DotNet.Runtime.7
 Microsoft.DotNet.Runtime.8
 Microsoft.DotNet.Runtime.9
+Microsoft.DotNet.Runtime.10
+Microsoft.DotNet.Runtime.11
 Microsoft.DotNet.Runtime.Preview
 Microsoft.DotNet.SDK.3_1
 Microsoft.DotNet.SDK.5
@@ -94,6 +108,8 @@ Microsoft.DotNet.SDK.6
 Microsoft.DotNet.SDK.7
 Microsoft.DotNet.SDK.8
 Microsoft.DotNet.SDK.9
+Microsoft.DotNet.SDK.10
+Microsoft.DotNet.SDK.11
 Microsoft.DotNet.SDK.Preview
 Microsoft.DotNet.AspNetCore.5
 Microsoft.DotNet.DesktopRuntime.5
