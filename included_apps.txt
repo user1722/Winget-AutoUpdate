@@ -16,6 +16,12 @@ Amazon.Corretto.20.JDK
 Amazon.Corretto.21.JDK
 Amazon.Corretto.22.JDK
 Amazon.Corretto.23.JDK
+Amazon.Corretto.24.JDK
+Amazon.Corretto.25.JDK
+Amazon.Corretto.26.JDK
+Amazon.Corretto.27.JDK
+Amazon.Corretto.28.JDK
+Amazon.Corretto.29.JDK
 Apple.AppleApplicationSupport.x64
 Apple.AppleApplicationSupport.x86
 Apple.AppleMobileDeviceSupport
